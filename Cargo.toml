@@ -1,0 +1,71 @@
+[package]
+name = "android_snake"
+version = "0.1.0"
+authors = ["OptimisticPeach <optimistic.peach@outlook.com>"]
+edition = "2018"
+
+[dependencies]
+# android_glue = "*"
+# piston2d-graphics = "0.21.1"
+# opengles_graphics =  {path = "../opengles_graphics/"}
+# piston = "0.37.0"
+# winit = "*"
+# pistoncore-glutin_window = {path = "../glutin_window"}
+# pistoncore-window = "0.32.0"
+# glutin = "0.18.0"
+# shader_version = "0.3.0"
+# rand = "*"
+
+android_glue = "*"
+piston2d-graphics = "0.21.1"
+opengles_graphics = "0.1.1"
+piston = "0.37.0"
+winit = "*"
+pistoncore-glutin_window = {path = "../glutin_window"}
+pistoncore-window = "0.32.0"
+glutin = "0.18.0"
+shader_version = "0.3.0"
+rand = "*"
+
+[package.metadata.android]
+
+# The Java package name for your application.
+# Hyphens are converted to underscores.
+package_name = "com.optimistic_peach.AndroidSnake"
+
+# The user-friendly name for your app, as displayed in the applications menu.
+label = "Snake"
+
+# Path to your application's res/ folder. See `examples/use_icon/res`.
+res = "res"
+
+# Virtual path your application's icon for any mipmap level. See `examples/use_icon/icon`.
+icon = "@mipmap/ic_launcher"
+
+# The target Android API level.
+# It defaults to 18 because this is the minimum supported by rustc.
+# (target_sdk_version and min_sdk_version default to the value of "android_version")
+android_version = 26
+target_sdk_version = 26
+min_sdk_version = 26
+
+# Specifies the array of targets to build for.
+# Defaults to "arm-linux-androideabi".
+# Other possible targets include "aarch64-linux-android", 
+# "armv7-linux-androideabi", "i686-linux-android" and "x86_64-linux-android".
+build_targets = [ "arm-linux-androideabi" ]
+
+# The maximum supported OpenGL ES version , as claimed by the manifest. Defaults to 2.0.
+# See https://developer.android.com/guide/topics/graphics/opengl.html#manifest
+opengles_version_major = 3
+opengles_version_minor = 1
+
+# Adds extra arbitrary XML attributes to the <application> tag in the manifest.
+# See https://developer.android.com/guide/topics/manifest/application-element.html
+[package.metadata.android.application_attributes]
+"android:hardwareAccelerated" = "true"
+
+# Adds extra arbitrary XML attributes to the <activity> tag in the manifest.
+# See https://developer.android.com/guide/topics/manifest/activity-element.html
+[package.metadata.android.activity_attributes]
+"android:screenOrientation" = "unspecified"

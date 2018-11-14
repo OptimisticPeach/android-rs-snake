@@ -1,0 +1,2 @@
+This is the same res folder as in [android-rs-glue's example](https://github.com/tomaka/android-rs-glue/tree/master/examples/use_icon)
+I used it both because I had a clone of it lying around, and because it's conveniently properly formatted. 
