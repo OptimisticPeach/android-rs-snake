@@ -46,6 +46,7 @@ impl App {
         winfo: &mut window_info::WindowInfoCache,
         count: &mut counter::Counter,
     ) {
+        winfo.reset();
         snake.reset_apple(winfo);
         snake.reset_pos();
         winfo.no_moves = 0;
@@ -62,15 +63,13 @@ impl App {
             let winfo_ref = &mut self.window_info;
             let count_ref = &mut self.count;
             self.gl.draw(args.viewport(), |c, gl| {
-                clear(BACKGROUND_COLOR, gl);
+                clear([0., 0., 0., 1.], gl);
                 if winfo_ref.window_size != (args.width as usize, args.height as usize) {
                     winfo_ref.window_size = (args.width as usize, args.height as usize);
                     //drawing the background automatically sets the winfo data
-                    background::background_draw(&c, gl, winfo_ref, true);
                     Self::on_size_change(snake_ref, winfo_ref, count_ref);
-                } else {
-                    background::background_draw(&c, gl, winfo_ref, false);
                 }
+                background::background_draw(&c, c.transform.trans(winfo_ref.gridoffsets.0, winfo_ref.gridoffsets.1), gl, winfo_ref);
                 snake_ref.draw(&c, gl, winfo_ref);
                 count_ref.draw(&c, gl, winfo_ref);
                 if paused {
