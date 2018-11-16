@@ -5,17 +5,6 @@ authors = ["OptimisticPeach <optimistic.peach@outlook.com>"]
 edition = "2018"
 
 [dependencies]
-# android_glue = "*"
-# piston2d-graphics = "0.21.1"
-# opengles_graphics =  {path = "../opengles_graphics/"}
-# piston = "0.37.0"
-# winit = "*"
-# pistoncore-glutin_window = {path = "../glutin_window"}
-# pistoncore-window = "0.32.0"
-# glutin = "0.18.0"
-# shader_version = "0.3.0"
-# rand = "*"
-
 android_glue = "*"
 piston2d-graphics = "0.21.1"
 opengles_graphics = "0.1.1"

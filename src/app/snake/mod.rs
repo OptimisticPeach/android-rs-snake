@@ -9,6 +9,15 @@ pub enum Direction {
     Middle,
 }
 
+macro_rules! t {
+    ($x:ident) => {
+        ($x as f64 * 64.)
+    };
+    (*$x:ident) => {
+        (*$x as f64 * 64.)
+    };
+}
+
 impl Direction {
     pub fn add_to(&self, (x, y): (usize, usize)) -> (isize, isize) {
         let (x, y) = (x as isize, y as isize);
@@ -102,10 +111,9 @@ impl Snake {
         let mut posx = super::util::rand_range(1, winfo.grid_size.0 - 1) as isize;
         let mut posy = super::util::rand_range(1, winfo.grid_size.1 - 1) as isize;
         while {
-            if self.apple == (posx as usize, posy as usize){
+            if self.apple == (posx as usize, posy as usize) {
                 true
-            }
-            else if self.body.contains(&(posx as usize, posy as usize)) {
+            } else if self.body.contains(&(posx as usize, posy as usize)) {
                 true
             } else {
                 let mut flag = false;
@@ -197,26 +205,26 @@ impl Snake {
         let rect = match self.dir {
             //x, y, w, h
             Direction::Up => [
-                winfo.gridoffsets.0 + (x as f64 * 64.),
-                winfo.gridoffsets.1 + (y as f64 * 64.) + 30.,
+                winfo.gridoffsets.0 + t!(x),
+                winfo.gridoffsets.1 + t!(y) + 30.,
                 60.,
                 30.,
             ],
             Direction::Down => [
-                winfo.gridoffsets.0 + (x as f64 * 64.),
-                winfo.gridoffsets.1 + (y as f64 * 64.),
+                winfo.gridoffsets.0 + t!(x),
+                winfo.gridoffsets.1 + t!(y),
                 60.,
                 30.,
             ],
             Direction::Left => [
-                winfo.gridoffsets.0 + (x as f64 * 64.) + 30.,
-                winfo.gridoffsets.1 + (y as f64 * 64.),
+                winfo.gridoffsets.0 + t!(x) + 30.,
+                winfo.gridoffsets.1 + t!(y),
                 30.,
                 60.,
             ],
             Direction::Right => [
-                winfo.gridoffsets.0 + (x as f64 * 64.),
-                winfo.gridoffsets.1 + (y as f64 * 64.),
+                winfo.gridoffsets.0 + t!(x),
+                winfo.gridoffsets.1 + t!(y),
                 30.,
                 60.,
             ],
@@ -226,10 +234,8 @@ impl Snake {
         ellipse::Ellipse::new([0., 1., 1., 1.]).draw(
             rectangle::square(0., 0., 60.),
             &c.draw_state,
-            c.transform.trans(
-                winfo.gridoffsets.0 + (x as f64 * 64.),
-                winfo.gridoffsets.1 + (y as f64 * 64.),
-            ),
+            c.transform
+                .trans(winfo.gridoffsets.0 + t!(x), winfo.gridoffsets.1 + t!(y)),
             g,
         )
     }
@@ -244,10 +250,8 @@ impl Snake {
         ellipse(
             [1., 0., 0., 1.],
             rectangle::square(0., 0., 60.),
-            c.transform.trans(
-                winfo.gridoffsets.0 + (x as f64 * 64.),
-                winfo.gridoffsets.1 + (y as f64 * 64.),
-            ),
+            c.transform
+                .trans(winfo.gridoffsets.0 + t!(x), winfo.gridoffsets.1 + t!(y)),
             g,
         );
     }
@@ -259,11 +263,49 @@ impl Snake {
         winfo: &super::window_info::WindowInfoCache,
     ) {
         for Bridge { pos: (x, y) } in self.bridges.iter() {
-            let x = winfo.gridoffsets.0 + (*x as f64 * 64.);
-            let y = winfo.gridoffsets.1 + (*y as f64 * 64.);
+            let x = winfo.gridoffsets.0 + t!(*x);
+            let y = winfo.gridoffsets.1 + t!(*y);
             rectangle([0., 1., 0., 1.], [x + 2., y, 56., 60.], c.transform, g);
             rectangle([0., 0., 1., 1.], [x, y + 2., 60., 56.], c.transform, g);
             rectangle([0., 0., 0., 1.], [x + 2., y + 2., 56., 56.], c.transform, g);
+        }
+    }
+
+    fn draw_ghost<G: Graphics>(
+        (x, y): (usize, usize),
+        c: &Context,
+        g: &mut G,
+        winfo: &super::window_info::WindowInfoCache,
+    ) {
+        let mut flagx = true;
+        let x = if x == 0 {
+            winfo.grid_size.0 as f64
+        } else if x == winfo.grid_size.0 - 1 {
+            -0.5
+        } else {
+            flagx = false;
+            x as f64
+        } * 64.
+            + winfo.gridoffsets.0
+            - 4.;
+        let mut flagy = true;
+        let y = if y == 0 {
+            winfo.grid_size.1 as f64
+        } else if y == winfo.grid_size.1 - 1 {
+            -0.5
+        } else {
+            flagy = false;
+            y as f64
+        } * 64.
+            + winfo.gridoffsets.1
+            - 4.;
+        if flagx && flagy {
+            return;
+        } else if flagy {
+            rectangle([0., 1., 0., 0.25], [x, y, 64., 32.], c.transform, g);
+        }
+        if flagx {
+            rectangle([0., 1., 0., 0.25], [x, y, 32., 64.], c.transform, g);
         }
     }
 
@@ -291,8 +333,8 @@ impl Snake {
                         ea,
                         [0., 0., 60., 60.],
                         c.transform.trans(
-                            winfo.gridoffsets.0 + (*x as f64 * 64.) + ox,
-                            winfo.gridoffsets.1 + (*y as f64 * 64.) + oy,
+                            winfo.gridoffsets.0 + t!(*x) + ox,
+                            winfo.gridoffsets.1 + t!(*y) + oy,
                         ),
                         g,
                     )
@@ -305,14 +347,14 @@ impl Snake {
                     };
                     let rect_bounds = match dir_to_test {
                         Direction::Up | Direction::Down => [
-                            winfo.gridoffsets.0 + (*x as f64 * 64.) + (60. - width) * 0.5,
-                            winfo.gridoffsets.1 + (*y as f64 * 64.),
+                            winfo.gridoffsets.0 + t!(*x) + (60. - width) * 0.5,
+                            winfo.gridoffsets.1 + t!(*y),
                             width,
                             60.,
                         ],
                         Direction::Left | Direction::Right => [
-                            winfo.gridoffsets.0 + (*x as f64 * 64.),
-                            winfo.gridoffsets.1 + (*y as f64 * 64.) + (60. - width) * 0.5,
+                            winfo.gridoffsets.0 + t!(*x),
+                            winfo.gridoffsets.1 + t!(*y) + (60. - width) * 0.5,
                             60.,
                             width,
                         ],
@@ -320,20 +362,27 @@ impl Snake {
                     };
                     rect.draw(rect_bounds, &c.draw_state, c.transform, g);
                 }
+                if *x == 0 || *x == winfo.grid_size.0 - 1 || *y == 0 || *y == winfo.grid_size.1 - 1
+                {
+                    Self::draw_ghost((*x, *y), c, g, winfo);
+                }
             }
         }
         let (x, y) = self.body.last().unwrap();
         ellipse(
             [0.4, 1., 0.4, 1.],
             [
-                winfo.gridoffsets.0 + (*x as f64 * 64.) + 5.,
-                winfo.gridoffsets.1 + (*y as f64 * 64.) + 5.,
+                winfo.gridoffsets.0 + t!(*x) + 5.,
+                winfo.gridoffsets.1 + t!(*y) + 5.,
                 50.,
                 50.,
             ],
             c.transform,
             g,
-        )
+        );
+        if *x == 0 || *x == winfo.grid_size.0 - 1 || *y == 0 || *y == winfo.grid_size.1 - 1 {
+            Self::draw_ghost((*x, *y), c, g, winfo);
+        }
     }
 
     pub fn draw<G: Graphics>(

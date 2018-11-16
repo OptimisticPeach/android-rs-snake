@@ -18,7 +18,7 @@ impl WindowInfoCache {
             grid_size: (0, 0),
             offsets: (0., 0.),
             frame: 0,
-            margin: 20,
+            margin: 30,
             header: 220,
             no_moves: 0,
             gridoffsets: (0., 0.),
