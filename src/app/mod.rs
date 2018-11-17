@@ -12,8 +12,6 @@ mod window_info;
 
 use self::window_info::WindowInfoCache;
 
-const BACKGROUND_COLOR: [f32; 4] = [0.4, 0.38, 0.4, 1.];
-
 pub struct App {
     gl: GlGraphics,
     snake: snake::Snake,
@@ -23,7 +21,7 @@ pub struct App {
     handled_move: bool,
     count: counter::Counter,
     paused: bool,
-    focus: bool
+    focus: bool,
 }
 
 impl App {
@@ -37,7 +35,7 @@ impl App {
             handled_move: false,
             count: counter::Counter::new(),
             paused: false,
-            focus: true
+            focus: true,
         }
     }
 
@@ -69,7 +67,13 @@ impl App {
                     //drawing the background automatically sets the winfo data
                     Self::on_size_change(snake_ref, winfo_ref, count_ref);
                 }
-                background::background_draw(&c, c.transform.trans(winfo_ref.gridoffsets.0, winfo_ref.gridoffsets.1), gl, winfo_ref);
+                background::background_draw(
+                    &c,
+                    c.transform
+                        .trans(winfo_ref.gridoffsets.0, winfo_ref.gridoffsets.1),
+                    gl,
+                    winfo_ref,
+                );
                 snake_ref.draw(&c, gl, winfo_ref);
                 count_ref.draw(&c, gl, winfo_ref);
                 if paused {
@@ -87,10 +91,7 @@ impl App {
     }
 
     fn signal_pause_change(&mut self, tobe: bool, data: Box<impl std::fmt::Debug>) {
-        android_glue::write_log(&format!(
-            "Called Pause with {:?} to set to {}",
-            data, tobe
-        ));
+        android_glue::write_log(&format!("Called Pause with {:?} to set to {}", data, tobe));
         self.paused = tobe;
     }
 

@@ -202,35 +202,17 @@ impl Snake {
         winfo: &super::window_info::WindowInfoCache,
     ) {
         let (x, y) = self.body[0];
-        let rect = match self.dir {
-            //x, y, w, h
-            Direction::Up => [
-                winfo.gridoffsets.0 + t!(x),
-                winfo.gridoffsets.1 + t!(y) + 30.,
-                60.,
-                30.,
-            ],
-            Direction::Down => [
-                winfo.gridoffsets.0 + t!(x),
-                winfo.gridoffsets.1 + t!(y),
-                60.,
-                30.,
-            ],
-            Direction::Left => [
-                winfo.gridoffsets.0 + t!(x) + 30.,
-                winfo.gridoffsets.1 + t!(y),
-                30.,
-                60.,
-            ],
-            Direction::Right => [
-                winfo.gridoffsets.0 + t!(x),
-                winfo.gridoffsets.1 + t!(y),
-                30.,
-                60.,
-            ],
-            Direction::Middle => [0., 0., 0., 0.],
-        };
-        rectangle::Rectangle::new([0., 1., 1., 1.]).draw(rect, &c.draw_state, c.transform, g);
+        let rect = super::util::get_corner_square(
+            super::util::find_dir(self.body[0], self.body[1], None),
+            self.dir,
+        );
+        rectangle::Rectangle::new([0., 1., 1., 1.]).draw(
+            rect,
+            &c.draw_state,
+            c.transform
+                .trans(winfo.gridoffsets.0 + t!(x), winfo.gridoffsets.1 + t!(y)),
+            g,
+        );
         ellipse::Ellipse::new([0., 1., 1., 1.]).draw(
             rectangle::square(0., 0., 60.),
             &c.draw_state,
@@ -323,9 +305,9 @@ impl Snake {
                     break;
                 }
                 let width = 15. * (1. - (i as f64 / self.body.len() as f64)) + 15.;
-                let dir1 = super::util::find_dir(self.body[i - 1], (*x, *y), winfo);
-                let dir2 = super::util::find_dir((*x, *y), self.body[i + 1], winfo);
-                if let Some((ox, oy, sa, ea)) = super::util::get_corner_square(dir2, dir1) {
+                let dir1 = super::util::find_dir(self.body[i - 1], (*x, *y), Some(winfo));
+                let dir2 = super::util::find_dir((*x, *y), self.body[i + 1], Some(winfo));
+                if let Some((ox, oy, sa, ea)) = super::util::get_angle_for_turn(dir2, dir1) {
                     circle_arc(
                         [0.4, 1., 0.4, 1.],
                         width,
