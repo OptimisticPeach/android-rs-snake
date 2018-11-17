@@ -1,4 +1,5 @@
 use graphics::*;
+use graphics::math::*;
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub enum Direction {
@@ -11,10 +12,10 @@ pub enum Direction {
 
 macro_rules! t {
     ($x:ident) => {
-        ($x as f64 * 64.)
+        $x as f64 * 64.
     };
     (*$x:ident) => {
-        (*$x as f64 * 64.)
+        *$x as f64 * 64.
     };
 }
 
@@ -198,8 +199,8 @@ impl Snake {
     fn draw_head<G: Graphics>(
         &self,
         c: &Context,
-        g: &mut G,
-        winfo: &super::window_info::WindowInfoCache,
+        transform: Matrix2d,
+        g: &mut G
     ) {
         let (x, y) = self.body[0];
         let rect = super::util::get_corner_square(
@@ -209,53 +210,51 @@ impl Snake {
         rectangle::Rectangle::new([0., 1., 1., 1.]).draw(
             rect,
             &c.draw_state,
-            c.transform
-                .trans(winfo.gridoffsets.0 + t!(x), winfo.gridoffsets.1 + t!(y)),
+            transform
+                .trans(t!(x), t!(y)),
             g,
         );
         ellipse::Ellipse::new([0., 1., 1., 1.]).draw(
             rectangle::square(0., 0., 60.),
             &c.draw_state,
-            c.transform
-                .trans(winfo.gridoffsets.0 + t!(x), winfo.gridoffsets.1 + t!(y)),
+            transform
+                .trans(t!(x), t!(y)),
             g,
         )
     }
 
     fn draw_apple<G: Graphics>(
         &self,
-        c: &Context,
-        g: &mut G,
-        winfo: &super::window_info::WindowInfoCache,
+        transform: Matrix2d,
+        g: &mut G
     ) {
         let (x, y) = self.apple;
         ellipse(
             [1., 0., 0., 1.],
             rectangle::square(0., 0., 60.),
-            c.transform
-                .trans(winfo.gridoffsets.0 + t!(x), winfo.gridoffsets.1 + t!(y)),
+            transform
+                .trans(t!(x), t!(y)),
             g,
         );
     }
 
     fn draw_bridges<G: Graphics>(
         &self,
-        c: &Context,
-        g: &mut G,
-        winfo: &super::window_info::WindowInfoCache,
+        transform: Matrix2d,
+        g: &mut G
     ) {
         for Bridge { pos: (x, y) } in self.bridges.iter() {
-            let x = winfo.gridoffsets.0 + t!(*x);
-            let y = winfo.gridoffsets.1 + t!(*y);
-            rectangle([0., 1., 0., 1.], [x + 2., y, 56., 60.], c.transform, g);
-            rectangle([0., 0., 1., 1.], [x, y + 2., 60., 56.], c.transform, g);
-            rectangle([0., 0., 0., 1.], [x + 2., y + 2., 56., 56.], c.transform, g);
+            let x = t!(*x);
+            let y = t!(*y);
+            rectangle([0., 1., 0., 1.], [x + 2., y, 56., 60.], transform, g);
+            rectangle([0., 0., 1., 1.], [x, y + 2., 60., 56.], transform, g);
+            rectangle([0., 0., 0., 1.], [x + 2., y + 2., 56., 56.], transform, g);
         }
     }
 
     fn draw_ghost<G: Graphics>(
         (x, y): (usize, usize),
-        c: &Context,
+        transform: Matrix2d,
         g: &mut G,
         winfo: &super::window_info::WindowInfoCache,
     ) {
@@ -268,7 +267,6 @@ impl Snake {
             flagx = false;
             x as f64
         } * 64.
-            + winfo.gridoffsets.0
             - 4.;
         let mut flagy = true;
         let y = if y == 0 {
@@ -279,21 +277,21 @@ impl Snake {
             flagy = false;
             y as f64
         } * 64.
-            + winfo.gridoffsets.1
             - 4.;
         if flagx && flagy {
             return;
         } else if flagy {
-            rectangle([0., 1., 0., 0.25], [x, y, 64., 32.], c.transform, g);
+            rectangle([0., 1., 0., 0.25], [x, y, 64., 32.], transform, g);
         }
         if flagx {
-            rectangle([0., 1., 0., 0.25], [x, y, 32., 64.], c.transform, g);
+            rectangle([0., 1., 0., 0.25], [x, y, 32., 64.], transform, g);
         }
     }
 
     fn draw_body<G: Graphics>(
         &self,
         c: &Context,
+        transform: Matrix2d,
         g: &mut G,
         winfo: &super::window_info::WindowInfoCache,
     ) {
@@ -314,9 +312,9 @@ impl Snake {
                         sa,
                         ea,
                         [0., 0., 60., 60.],
-                        c.transform.trans(
-                            winfo.gridoffsets.0 + t!(*x) + ox,
-                            winfo.gridoffsets.1 + t!(*y) + oy,
+                        transform.trans(
+                            t!(*x) + ox,
+                            t!(*y) + oy,
                         ),
                         g,
                     )
@@ -329,24 +327,24 @@ impl Snake {
                     };
                     let rect_bounds = match dir_to_test {
                         Direction::Up | Direction::Down => [
-                            winfo.gridoffsets.0 + t!(*x) + (60. - width) * 0.5,
-                            winfo.gridoffsets.1 + t!(*y),
+                            t!(*x) + (60. - width) * 0.5,
+                            t!(*y),
                             width,
                             60.,
                         ],
                         Direction::Left | Direction::Right => [
-                            winfo.gridoffsets.0 + t!(*x),
-                            winfo.gridoffsets.1 + t!(*y) + (60. - width) * 0.5,
+                            t!(*x),
+                            t!(*y) + (60. - width) * 0.5,
                             60.,
                             width,
                         ],
                         Direction::Middle => [0., 0., 0., 0.],
                     };
-                    rect.draw(rect_bounds, &c.draw_state, c.transform, g);
+                    rect.draw(rect_bounds, &c.draw_state, transform, g);
                 }
                 if *x == 0 || *x == winfo.grid_size.0 - 1 || *y == 0 || *y == winfo.grid_size.1 - 1
                 {
-                    Self::draw_ghost((*x, *y), c, g, winfo);
+                    Self::draw_ghost((*x, *y), transform, g, winfo);
                 }
             }
         }
@@ -354,32 +352,33 @@ impl Snake {
         ellipse(
             [0.4, 1., 0.4, 1.],
             [
-                winfo.gridoffsets.0 + t!(*x) + 5.,
-                winfo.gridoffsets.1 + t!(*y) + 5.,
+                t!(*x) + 5.,
+                t!(*y) + 5.,
                 50.,
                 50.,
             ],
-            c.transform,
+            transform,
             g,
         );
         if *x == 0 || *x == winfo.grid_size.0 - 1 || *y == 0 || *y == winfo.grid_size.1 - 1 {
-            Self::draw_ghost((*x, *y), c, g, winfo);
+            Self::draw_ghost((*x, *y), transform, g, winfo);
         }
     }
 
     pub fn draw<G: Graphics>(
         &self,
         c: &Context,
+        transform: Matrix2d,
         g: &mut G,
         winfo: &super::window_info::WindowInfoCache,
     ) {
-        self.draw_body(c, g, winfo);
+        self.draw_body(c, transform, g, winfo);
 
-        self.draw_head(c, g, winfo);
+        self.draw_head(c, transform, g);
 
-        self.draw_bridges(c, g, winfo);
+        self.draw_bridges(transform, g);
 
-        self.draw_apple(c, g, winfo);
+        self.draw_apple(transform, g);
     }
 
     pub fn reset(&mut self, winfo: &super::window_info::WindowInfoCache) {

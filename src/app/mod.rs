@@ -67,14 +67,11 @@ impl App {
                     //drawing the background automatically sets the winfo data
                     Self::on_size_change(snake_ref, winfo_ref, count_ref);
                 }
-                background::background_draw(
-                    &c,
-                    c.transform
-                        .trans(winfo_ref.gridoffsets.0, winfo_ref.gridoffsets.1),
-                    gl,
-                    winfo_ref,
-                );
-                snake_ref.draw(&c, gl, winfo_ref);
+                let transformed = c
+                    .transform
+                    .trans(winfo_ref.gridoffsets.0, winfo_ref.gridoffsets.1);
+                background::background_draw(&c, transformed, gl, winfo_ref);
+                snake_ref.draw(&c, transformed, gl, winfo_ref);
                 count_ref.draw(&c, gl, winfo_ref);
                 if paused {
                     pause_screen::draw_pause(&c, gl, winfo_ref);
