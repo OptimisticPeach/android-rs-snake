@@ -10,13 +10,12 @@ Here's a breakdown of what I've done:
 - Portals appear every 5 apples gathered. (Named bridges in the implementation)
   - Snake can go over the portal in both directions, but can't use the portal as a place to actually be.
   - Portals can't appear beside eachother.
-- Snake body length is shown in a binary counter at the top of the screen.
-    - I couldn't get text working, this is going to be changed soon...
+- A number counter for the score at the top of the screen.
 - Similar colour scheme to that of my original implementation.
 - Pauses when the app loses its focus.
     - Unpauses when tapped.
     - Processing the `LostFocus` and `GainedFocus` events fix [#418 in glutin](https://github.com/tomaka/glutin/issues/418)
-    - Again I couldn't get text working, so no real gui for now.
+    - No real gui for now.
 - When your body is on an edge, a green 'ghost' appears on the other side to warn you to not go there.
 
 To run
@@ -33,6 +32,7 @@ Now steps to run:
 - Download [this commit](https://github.com/PistonDevelopers/glutin_window.git) of `glutin_window` and edit line 58 in `/src/lib.rs` like in [this issue](https://github.com/PistonDevelopers/glutin_window/issues/154)
     - Note, that this version is necessary because of how this is pieced together, even though this was changed already in the newest version of `glutin_window` 
 - Make sure the `Cargo.toml` points to the appropriate directory for `glutin_window` that you just downloaded
+- Install the an appropriate font into `/fonts/`, and change the font referred to in `/src/app/mod.rs` in `App::new()`
 - Install `cargo apk`: `cargo install cargo-apk` if you haven't already
 - Connect your device of choice (Emulator or physical)
 - Run `cargo apk run` in the root of this project (with the `Cargo.toml`)

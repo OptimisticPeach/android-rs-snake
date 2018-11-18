@@ -3,3 +3,4 @@
 /.gradle
 /.vscode
 **/*.lock
+/fonts/Ubuntu-R.ttf

@@ -14,10 +14,12 @@ use piston::window::WindowSettings;
 use piston::*;
 
 fn main() {
-    use std::env;
+    {
+        use std::env;
+        let key = "RUST_BACKTRACE";
+        env::set_var(key, "1");
+    }
 
-    let key = "RUST_BACKTRACE";
-    env::set_var(key, "1");
     let mut android_window: GlutinWindow = WindowSettings::new("Glutin Window", (640, 480))
         .fullscreen(false)
         .opengl(shader_version::OpenGL::V2_0)
@@ -26,7 +28,7 @@ fn main() {
     opengles_graphics::gl::load_with(|s| {
         android_window.window.get_proc_address(s) as *const std::ffi::c_void
     });
-
+    
     let (sender, receiver) = std::sync::mpsc::channel();
     android_glue::add_sender(sender);
     let mut app = app::App::new(receiver);

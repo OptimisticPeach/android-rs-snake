@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub struct WindowInfoCache {
     pub window_size: (usize, usize),
     pub grid_size: (usize, usize),
@@ -8,6 +10,7 @@ pub struct WindowInfoCache {
     pub no_moves: usize,
     pub gridoffsets: (f64, f64),
     pub frames_per_move: u8,
+    text_size_cache: HashMap<(String, u32), (f32, f32)>
 }
 
 impl WindowInfoCache {
@@ -22,6 +25,7 @@ impl WindowInfoCache {
             no_moves: 0,
             gridoffsets: (0., 0.),
             frames_per_move: 18,
+            text_size_cache: HashMap::new()
         }
     }
 
@@ -43,5 +47,28 @@ impl WindowInfoCache {
         self.offsets = (offset_x, offset_y);
         self.grid_size = (num_x, num_y);
         self.recalc_gridoffsets();
+    }
+
+    /// Return size of the text in pixels
+    pub fn size_of_str<T: graphics::character::CharacterCache>(
+        &mut self,
+        cache: &mut T,
+        string: &str,
+        scale: u32,
+    ) -> (f64, f64) {
+        if let Some(size) = self.text_size_cache.get(&(string.to_string(), scale)){
+            return (size.0 as f64, size.1 as f64);
+        }
+        let mut size_x = 0.;
+        let mut size_y = 0.;
+        for i in string.chars() {
+            let character = cache.character(scale, i);
+            size_x += character.size[0] + character.offset[0];
+            if size_y < character.size[1] + character.offset[1] {
+                size_y = character.size[1] + character.offset[1];
+            }
+        }
+        self.text_size_cache.insert((string.to_string(), scale), (size_x as f32, size_y as f32));
+        (size_x as f64, size_y as f64)
     }
 }

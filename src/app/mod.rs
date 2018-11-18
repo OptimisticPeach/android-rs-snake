@@ -1,5 +1,6 @@
 use android_glue;
 use opengles_graphics::GlGraphics;
+use opengles_graphics::glyph_cache::*;
 use piston::input::*;
 
 mod background;
@@ -12,7 +13,7 @@ mod window_info;
 
 use self::window_info::WindowInfoCache;
 
-pub struct App {
+pub struct App<'a> {
     gl: GlGraphics,
     snake: snake::Snake,
     window_info: WindowInfoCache,
@@ -22,9 +23,10 @@ pub struct App {
     count: counter::Counter,
     paused: bool,
     focus: bool,
+    cache: GlyphCache<'a>
 }
 
-impl App {
+impl<'a> App<'a> {
     pub fn new(sender: std::sync::mpsc::Receiver<android_glue::Event>) -> Self {
         Self {
             gl: GlGraphics::new(opengles_graphics::OpenGL::V3_1),
@@ -36,6 +38,7 @@ impl App {
             count: counter::Counter::new(),
             paused: false,
             focus: true,
+            cache: GlyphCache::from_bytes(include_bytes!("../../fonts/Ubuntu-R.ttf")).unwrap()
         }
     }
 
@@ -43,12 +46,13 @@ impl App {
         snake: &mut snake::Snake,
         winfo: &mut window_info::WindowInfoCache,
         count: &mut counter::Counter,
+        cache: &mut GlyphCache<'a>
     ) {
         winfo.reset();
         snake.reset_apple(winfo);
         snake.reset_pos();
         winfo.no_moves = 0;
-        count.set_num((snake.body.len() - 3) / 3, winfo);
+        count.set_num((snake.body.len() - 3) / 3, winfo, cache);
     }
 
     pub fn draw(&mut self, args: &RenderArgs) {
@@ -60,19 +64,20 @@ impl App {
             let snake_ref = &mut self.snake;
             let winfo_ref = &mut self.window_info;
             let count_ref = &mut self.count;
+            let cache_ref = &mut self.cache;
             self.gl.draw(args.viewport(), |c, gl| {
                 clear([0., 0., 0., 1.], gl);
                 if winfo_ref.window_size != (args.width as usize, args.height as usize) {
                     winfo_ref.window_size = (args.width as usize, args.height as usize);
                     //drawing the background automatically sets the winfo data
-                    Self::on_size_change(snake_ref, winfo_ref, count_ref);
+                    Self::on_size_change(snake_ref, winfo_ref, count_ref, cache_ref);
                 }
                 let transformed = c
                     .transform
                     .trans(winfo_ref.gridoffsets.0, winfo_ref.gridoffsets.1);
                 background::background_draw(&c, transformed, gl, winfo_ref);
                 snake_ref.draw(&c, transformed, gl, winfo_ref);
-                count_ref.draw(&c, gl, winfo_ref);
+                count_ref.draw(&c, cache_ref, gl);
                 if paused {
                     pause_screen::draw_pause(&c, gl, winfo_ref);
                 }
@@ -84,7 +89,7 @@ impl App {
         self.snake.reset(&self.window_info);
         self.window_info.no_moves = 0;
         self.count
-            .set_num((self.snake.body.len() - 3) / 3, &self.window_info);
+            .set_num((self.snake.body.len() - 3) / 3, &mut self.window_info, &mut self.cache);
     }
 
     fn signal_pause_change(&mut self, tobe: bool, data: Box<impl std::fmt::Debug>) {
@@ -101,7 +106,7 @@ impl App {
             self.on_dead();
         }
         if self.snake.body.len() - 3 != prev_len && !dead {
-            self.count.set_num(prev_len / 3 + 1, &self.window_info);
+            self.count.set_num(prev_len / 3 + 1, &mut self.window_info, &mut self.cache);
         }
     }
 
