@@ -16,8 +16,8 @@ impl Counter {
     }
     pub fn set_num<T: graphics::character::CharacterCache>(&mut self, num: usize, winfo: &mut super::window_info::WindowInfoCache, cache_ref: &mut T) {
         self.number = num;
-        let size = winfo.size_of_str(cache_ref, &format!("{}", num), 50);
-        self.offset_y = size.1 + 30.;
+        let size = winfo.size_of_str(cache_ref, &format!("{}", num), 80);
+        self.offset_y = size.1 + 50.;
         self.offset_x = (winfo.window_size.0 as f64 - size.0) / 2.;
     }
     pub fn draw<G: Graphics, T: graphics::character::CharacterCache<Texture=G::Texture>>(
@@ -28,7 +28,7 @@ impl Counter {
     ) {
         text(
             [0.6, 0.3, 0.6, 1.],
-            50,
+            80,
             &format!("{}", self.number),
             cache_ref,
             c.transform.trans(self.offset_x, self.offset_y),
