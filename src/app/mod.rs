@@ -17,7 +17,6 @@ pub struct App<'a> {
     gl: GlGraphics,
     window_info: WindowInfoCache,
     event_handler: std::sync::mpsc::Receiver<android_glue::Event>,
-    paused: bool,
     focus: bool,
     cache: GlyphCache<'a>,
     game_data: GameState,
@@ -29,7 +28,6 @@ impl<'a> App<'a> {
             gl: GlGraphics::new(opengles_graphics::OpenGL::V3_1),
             window_info: WindowInfoCache::new(),
             event_handler: sender,
-            paused: false,
             focus: true,
             cache: GlyphCache::from_bytes(include_bytes!("../../fonts/Ubuntu-R.ttf")).unwrap(),
             game_data: GameState::initial()
@@ -54,7 +52,6 @@ impl<'a> App<'a> {
         if self.focus {
             //we can't borrow self as mutable more than once, or borrow as immutable at the same time
             //so we just make a bunch of references to self's data and pass those into the closure
-            let paused = self.paused;
             let winfo_ref = &mut self.window_info;
             let cache_ref = &mut self.cache;
             let gdata_ref = &mut self.game_data;
@@ -68,7 +65,7 @@ impl<'a> App<'a> {
                         .transform
                         .trans(winfo_ref.gridoffsets.0, winfo_ref.gridoffsets.1);
                     background::background_draw(&c, transformed, gl, winfo_ref);
-                    gdata_ref.player_state.draw(&c, transformed, gl, cache_ref, winfo_ref);
+                    gdata_ref.draw(&c, transformed, gl, cache_ref, winfo_ref);
                 }
             });
         }
@@ -78,15 +75,14 @@ impl<'a> App<'a> {
         }
     }
 
-    fn signal_pause_change(&mut self, tobe: bool, data: Box<impl std::fmt::Debug>) {
-        android_glue::write_log(&format!("Called Pause with {:?} to set to {}", data, tobe));
-        self.paused = tobe;
+    fn signal_pause_change(&mut self) {
+        self.game_data.pause();
     }
 
     pub fn update(&mut self, _: &UpdateArgs) {
         self.window_info.frame += 1;
-        if self.window_info.frame % self.window_info.frames_per_move as u128 == 0 && !self.paused {
-            self.game_data.player_state.update(&mut self.window_info, &mut self.cache);
+        if self.window_info.frame % self.window_info.frames_per_move as u128 == 0 {
+            self.game_data.update(&mut self.window_info, &mut self.cache);
         }
         while let Ok(i) = self.event_handler.try_recv() {
             self.handle(i);
@@ -94,16 +90,11 @@ impl<'a> App<'a> {
     }
 
     fn handle(&mut self, event: android_glue::Event) {
-        use android_glue::{Event, Motion, MotionAction};
+        use android_glue::{Event};
         match event {
-            Event::EventMotion(Motion {
-                action: act,
-                pointer_id,
-                x,
-                y,
-            }) => self.game_data.handle(act, pointer_id, x, y, &mut self.window_info),
+            Event::EventMotion(motion) => self.game_data.handle(motion, &mut self.window_info),
             Event::LostFocus => {
-                self.signal_pause_change(true, Box::new(event));
+                self.signal_pause_change();
                 self.focus = false;
             }
             Event::GainedFocus => {

@@ -11,9 +11,9 @@ impl TwoPlayer {
 
     pub fn draw<G: Graphics>(
         &mut self,
-        c: &Context,
-        transform: Matrix2d,
-        g: &mut G,
-        winfo: &crate::app::window_info::WindowInfoCache,
+        _: &Context,
+        _: Matrix2d,
+        _: &mut G,
+        _: &crate::app::window_info::WindowInfoCache,
     ) {}
 }

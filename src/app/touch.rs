@@ -16,17 +16,11 @@ impl Touch {
     pub fn start(&mut self, x: f32, y: f32, id: usize) -> Result<(), &'static str> {
         if let Some(selfid) = self.id {
             if id == selfid {
-                if let Some(_) = self.first {
-                    return Err("Cannot start without having ended or cancelled");
-                }
 
                 self.first = Some((x, y));
             }
         } else {
             self.id = Some(id);
-            if let Some(_) = self.first {
-                return Err("Cannot start without having ended or cancelled");
-            }
 
             self.first = Some((x, y));
         }

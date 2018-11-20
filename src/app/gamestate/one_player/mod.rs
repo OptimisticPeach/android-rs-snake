@@ -74,12 +74,10 @@ impl OnePlayer {
 
     pub fn handle(
         &mut self,
-        action: MotionAction,
-        pointer_id: i32,
-        x: f32,
-        y: f32,
+        action: android_glue::Motion,
         winfo: &mut window_info::WindowInfoCache,
     ) {
+        let android_glue::Motion{action, pointer_id, x, y} = action;
         match action {
             MotionAction::Down => {
                 self.touch_handler.start(x, y, pointer_id as usize).unwrap();
@@ -97,8 +95,7 @@ impl OnePlayer {
                     }
                 } else {
                     panic!(
-                        "Cannot end without having had started in\
-                         app/handle/Event::EventMotion/MotionAction::Up"
+                        "Cannot end without having had started"
                     );
                 }
             }
@@ -106,5 +103,9 @@ impl OnePlayer {
                 self.touch_handler.cancel();
             }
         }
+    }
+
+    pub fn pause(&mut self) {
+        self.touch_handler.cancel();
     }
 }

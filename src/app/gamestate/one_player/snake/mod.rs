@@ -146,12 +146,6 @@ impl Snake {
         true
     }
 
-    pub fn reset_pos(&mut self) {
-        for i in self.body.iter_mut() {
-            *i = (1, 1);
-        }
-    }
-
     fn draw_head<G: Graphics>(
         &self,
         c: &Context,

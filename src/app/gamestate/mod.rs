@@ -14,7 +14,7 @@ pub enum Player{
 } 
 
 impl Player {
-    pub fn draw<G: Graphics, T: graphics::character::CharacterCache<Texture=G::Texture>>(
+    pub(in self) fn draw<G: Graphics, T: graphics::character::CharacterCache<Texture=G::Texture>>(
         &mut self,
         c: &Context,
         transform: Matrix2d,
@@ -32,7 +32,7 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
+    pub(in self) fn update(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
         match self{
             Player::One(one) => {
                 one.update(winfo, cache);
@@ -43,12 +43,22 @@ impl Player {
         }
     }
 
-    pub fn handle(&mut self, action: android_glue::MotionAction, pointer_id: i32, x: f32, y: f32, winfo: &mut window_info::WindowInfoCache){
+    pub(in self) fn handle(&mut self, action: android_glue::Motion, winfo: &mut window_info::WindowInfoCache){
         match self {
             Player::One(one) => {
-                one.handle(action, pointer_id, x, y, winfo);
+                one.handle(action, winfo);
             }
-            Player::Two(two) => {
+            Player::Two(_) => {
+            }
+        }
+    }
+
+    pub(in self) fn pause(&mut self) {
+        match self {
+            Player::One(one) => {
+                one.pause();
+            }
+            Player::Two(_) => {
             }
         }
     }
@@ -67,8 +77,22 @@ impl GameState {
         }
     }
 
-    pub fn handle(&mut self, action: android_glue::MotionAction, pointer_id: i32, x: f32, y: f32, winfo: &mut window_info::WindowInfoCache){
-        match action {
+    pub fn draw<G: Graphics, T: graphics::character::CharacterCache<Texture=G::Texture>>(
+        &mut self,
+        c: &Context,
+        transform: Matrix2d,
+        g: &mut G,
+        cache: &mut T,
+        winfo: &mut window_info::WindowInfoCache,
+    ){
+        self.player_state.draw(c, transform, g, cache, winfo);
+        if self.is_paused {
+            pause_screen::draw_pause(c, g, winfo);
+        }
+    }
+
+    pub fn handle(&mut self, action: android_glue::Motion, winfo: &mut window_info::WindowInfoCache){
+        match action.action {
             android_glue::MotionAction::Up => {
                 if self.is_paused {
                     self.is_paused = false;
@@ -83,7 +107,7 @@ impl GameState {
             }
             _ => {}
         }
-        self.player_state.handle(action, pointer_id, x, y, winfo);
+        self.player_state.handle(action, winfo);
     }
 
     pub fn size_change(&mut self, old_w: usize, old_h: usize, winfo: &mut window_info::WindowInfoCache){
@@ -101,6 +125,13 @@ impl GameState {
     }
 
     pub fn pause(&mut self){
-        self.is_paused = true;
+        self.is_paused = !self.is_paused;
+        self.player_state.pause();
+    }
+
+    pub fn update(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
+        if !self.is_paused{
+            self.player_state.update(winfo, cache);
+        }
     }
 }
