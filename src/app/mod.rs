@@ -68,16 +68,13 @@ impl<'a> App<'a> {
                         .transform
                         .trans(winfo_ref.gridoffsets.0, winfo_ref.gridoffsets.1);
                     background::background_draw(&c, transformed, gl, winfo_ref);
-                    gdata_ref.draw(&c, transformed, gl, cache_ref, winfo_ref);
+                    gdata_ref.player_state.draw(&c, transformed, gl, cache_ref, winfo_ref);
                 }
             });
         }
 
-        if let Some((old, new)) = size_change {
-            self.on_size_change(
-                old,
-                new,
-            );
+        if let Some((oldw, oldh)) = size_change {
+            self.on_size_change(oldw, oldh);
         }
     }
 
@@ -89,7 +86,7 @@ impl<'a> App<'a> {
     pub fn update(&mut self, _: &UpdateArgs) {
         self.window_info.frame += 1;
         if self.window_info.frame % self.window_info.frames_per_move as u128 == 0 && !self.paused {
-            self.game_data.update(&mut self.window_info, &mut self.cache);
+            self.game_data.player_state.update(&mut self.window_info, &mut self.cache);
         }
         while let Ok(i) = self.event_handler.try_recv() {
             self.handle(i);

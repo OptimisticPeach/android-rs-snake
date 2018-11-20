@@ -1,9 +1,11 @@
+mod snake;
+
 use android_glue::*;
 use graphics::math::Matrix2d;
 use graphics::*;
 
 use crate::app::*;
-use super::snake::*;
+pub use self::snake::*;
 
 pub struct OnePlayer {
     handled_move: bool,
@@ -13,6 +15,35 @@ pub struct OnePlayer {
 }
 
 impl OnePlayer {
+    pub fn new() -> Self {
+        OnePlayer {
+            handled_move: false,
+            touch_handler: touch::Touch::new(),
+            count: counter::Counter::new(),
+            snake: Snake::new(4, 1, 1),
+        }
+    }
+
+    pub fn draw<G: Graphics, T: graphics::character::CharacterCache<Texture = G::Texture>>(
+        &mut self,
+        c: &Context,
+        transform: Matrix2d,
+        g: &mut G,
+        cache: &mut T,
+        winfo: &mut window_info::WindowInfoCache,
+    ) {
+        self.snake.draw(&c, transform, g, winfo);
+        self.count.draw(&c, cache, g);
+    }
+
+    pub fn update(
+        &mut self,
+        winfo: &mut window_info::WindowInfoCache,
+        cache: &mut impl graphics::character::CharacterCache,
+    ) {
+        self.tick(winfo, cache);
+    }
+
     fn on_dead(
         &mut self,
         winfo: &mut window_info::WindowInfoCache,
@@ -40,41 +71,8 @@ impl OnePlayer {
             self.count.set_num(prev_len / 3 + 1, winfo, cache);
         }
     }
-}
 
-use super::PlayerState;
-
-impl PlayerState for OnePlayer {
-    fn new() -> Self {
-        OnePlayer {
-            handled_move: false,
-            touch_handler: touch::Touch::new(),
-            count: counter::Counter::new(),
-            snake: Snake::new(4, 1, 1),
-        }
-    }
-
-    fn update(
-        &mut self,
-        winfo: &mut window_info::WindowInfoCache,
-        cache: &mut impl graphics::character::CharacterCache,
-    ) {
-        self.tick(winfo, cache);
-    }
-
-    fn draw<G: Graphics, T: graphics::character::CharacterCache<Texture = G::Texture>>(
-        &mut self,
-        c: &Context,
-        transform: Matrix2d,
-        g: &mut G,
-        cache: &mut T,
-        winfo: &mut window_info::WindowInfoCache,
-    ) {
-        self.snake.draw(&c, transform, g, winfo);
-        self.count.draw(&c, cache, g);
-    }
-
-    fn handle(
+    pub fn handle(
         &mut self,
         action: MotionAction,
         pointer_id: i32,

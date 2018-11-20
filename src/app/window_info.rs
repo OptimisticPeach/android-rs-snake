@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct WindowInfoCache {
     pub window_size: (usize, usize),
     pub grid_size: (usize, usize),
