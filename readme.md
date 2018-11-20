@@ -1,5 +1,5 @@
 # android-rs-snake
-This is a small reimplementation of my [previous snake project](https://github.com/OptimisticPeach/Android-SFML-Snake) (written in C++/SFML), rewritten in rust with piston. 
+This is a reimplementation of my [previous snake project](https://github.com/OptimisticPeach/Android-SFML-Snake) (written in C++/SFML), rewritten in rust with piston. 
 
 Here's a breakdown of what I've done:
 - Snake moves in a data moving fashion similar to how a snake actually moves.
