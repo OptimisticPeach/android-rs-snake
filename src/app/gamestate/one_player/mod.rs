@@ -12,6 +12,7 @@ pub struct OnePlayer {
     touch_handler: touch::Touch,
     count: counter::Counter,
     snake: Snake,
+    run_once: Option<()>
 }
 
 impl OnePlayer {
@@ -21,6 +22,7 @@ impl OnePlayer {
             touch_handler: touch::Touch::new(),
             count: counter::Counter::new(),
             snake: Snake::new(4, 1, 1),
+            run_once: None
         }
     }
 
@@ -32,6 +34,12 @@ impl OnePlayer {
         cache: &mut T,
         winfo: &mut window_info::WindowInfoCache,
     ) {
+        //we place this here so we dont get a jumpy apple on the first frame
+        if self.run_once.is_none(){
+            self.snake.reset_apple(winfo);
+            self.run_once = Some(());
+            self.count.set_num(0, winfo, cache);
+        }
         self.snake.draw(&c, transform, g, winfo);
         self.count.draw(&c, cache, g);
     }

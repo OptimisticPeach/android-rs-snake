@@ -65,7 +65,7 @@ impl<'a> App<'a> {
                         .transform
                         .trans(winfo_ref.gridoffsets.0, winfo_ref.gridoffsets.1);
                     background::background_draw(&c, transformed, gl, winfo_ref);
-                    gdata_ref.draw(&c, transformed, gl, cache_ref, winfo_ref);
+                    gdata_ref.draw(&c, transformed.trans(2., 2.), gl, cache_ref, winfo_ref);
                 }
             });
         }
