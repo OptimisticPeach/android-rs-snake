@@ -5,15 +5,14 @@ use crate::app::*;
 
 pub struct TwoPlayer {}
 
-impl TwoPlayer {
-    pub fn new() -> Self {
-        TwoPlayer {}
-    }
-}
+impl TwoPlayer {}
 
 use super::PlayerState;
 
 impl PlayerState for TwoPlayer{
+    fn new() -> Self {
+        TwoPlayer {}
+    }
     fn update(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache){}
     fn draw<G: Graphics, T: graphics::character::CharacterCache<Texture=G::Texture>>(
         &mut self,

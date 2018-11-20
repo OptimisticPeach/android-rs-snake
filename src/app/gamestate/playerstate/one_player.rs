@@ -13,15 +13,6 @@ pub struct OnePlayer {
 }
 
 impl OnePlayer {
-    pub fn new() -> Self {
-        OnePlayer {
-            handled_move: false,
-            touch_handler: touch::Touch::new(),
-            count: counter::Counter::new(),
-            snake: Snake::new(4, 1, 1),
-        }
-    }
-
     fn on_dead(
         &mut self,
         winfo: &mut window_info::WindowInfoCache,
@@ -54,6 +45,15 @@ impl OnePlayer {
 use super::PlayerState;
 
 impl PlayerState for OnePlayer {
+    fn new() -> Self {
+        OnePlayer {
+            handled_move: false,
+            touch_handler: touch::Touch::new(),
+            count: counter::Counter::new(),
+            snake: Snake::new(4, 1, 1),
+        }
+    }
+
     fn update(
         &mut self,
         winfo: &mut window_info::WindowInfoCache,

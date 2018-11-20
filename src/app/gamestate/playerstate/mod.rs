@@ -20,4 +20,5 @@ pub trait PlayerState{
         winfo: &mut window_info::WindowInfoCache,
     );
     fn handle(&mut self, action: android_glue::MotionAction, pointer_id: i32, x: f32, y: f32, winfo: &mut window_info::WindowInfoCache);
+    fn new() -> Self;
 }
