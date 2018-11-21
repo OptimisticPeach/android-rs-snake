@@ -1,5 +1,6 @@
 pub mod one_player;
 pub mod two_player;
+pub mod common;
 mod pause_screen;
 
 use graphics::math::Matrix2d;

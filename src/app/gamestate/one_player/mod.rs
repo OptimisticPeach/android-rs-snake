@@ -96,7 +96,7 @@ impl OnePlayer {
                     if pointer_id as usize == pid {
                         let angle = self.touch_handler.end(x, y, true).unwrap();
                         if !self.handled_move {
-                            self.snake.dir = Direction::get_dir(angle, self.snake.dir);
+                            self.snake.dir = super::common::Direction::get_dir(angle, self.snake.dir);
                             self.handled_move = true;
                             winfo.no_moves += 1;
                         }
