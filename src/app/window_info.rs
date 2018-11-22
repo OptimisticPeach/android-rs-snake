@@ -10,7 +10,7 @@ pub struct WindowInfoCache {
     pub header: usize,
     pub no_moves: usize,
     pub gridoffsets: (f64, f64),
-    pub frames_per_move: u8,
+    pub frames_per_move: u8, 
     text_size_cache: HashMap<(String, u32), (f32, f32)>
 }
 

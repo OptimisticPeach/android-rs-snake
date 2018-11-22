@@ -3,9 +3,11 @@ use graphics::*;
 
 mod bridge;
 mod direction;
+mod touch;
 
 pub use self::bridge::*;
 pub use self::direction::*;
+pub use self::touch::*;
 
 macro_rules! t {
     ($x:ident) => {

@@ -1,28 +1,28 @@
 mod snake;
 
+pub use self::snake::*;
+use super::common::Touch;
 use android_glue::*;
+use crate::app::*;
 use graphics::math::Matrix2d;
 use graphics::*;
 
-use crate::app::*;
-pub use self::snake::*;
-
 pub struct OnePlayer {
     handled_move: bool,
-    touch_handler: touch::Touch,
+    touch_handler: Touch,
     count: counter::Counter,
     snake: Snake,
-    run_once: Option<()>
+    run_once: Option<()>,
 }
 
 impl OnePlayer {
     pub fn new() -> Self {
         OnePlayer {
             handled_move: false,
-            touch_handler: touch::Touch::new(),
+            touch_handler: Touch::new(),
             count: counter::Counter::new(),
             snake: Snake::new(4, 1, 1),
-            run_once: None
+            run_once: None,
         }
     }
 
@@ -35,7 +35,7 @@ impl OnePlayer {
         winfo: &mut window_info::WindowInfoCache,
     ) {
         //we place this here so we dont get a jumpy apple on the first frame
-        if self.run_once.is_none(){
+        if self.run_once.is_none() {
             self.snake.reset_apple(winfo);
             self.run_once = Some(());
             self.count.set_num(0, winfo, cache);
@@ -85,10 +85,17 @@ impl OnePlayer {
         action: android_glue::Motion,
         winfo: &mut window_info::WindowInfoCache,
     ) {
-        let android_glue::Motion{action, pointer_id, x, y} = action;
+        let android_glue::Motion {
+            action,
+            pointer_id,
+            x,
+            y,
+        } = action;
         match action {
             MotionAction::Down => {
-                self.touch_handler.start(x, y, pointer_id as usize).unwrap();
+                if self.touch_handler.id.is_none() {
+                    self.touch_handler.start(x, y, pointer_id as usize);
+                }
             }
             MotionAction::Move => {}
             MotionAction::Up => {
@@ -96,15 +103,14 @@ impl OnePlayer {
                     if pointer_id as usize == pid {
                         let angle = self.touch_handler.end(x, y, true).unwrap();
                         if !self.handled_move {
-                            self.snake.dir = super::common::Direction::get_dir(angle, self.snake.dir);
+                            self.snake.dir =
+                                super::common::Direction::get_dir(angle, self.snake.dir);
                             self.handled_move = true;
                             winfo.no_moves += 1;
                         }
                     }
                 } else {
-                    panic!(
-                        "Cannot end without having had started"
-                    );
+                    panic!("Cannot end without having had started");
                 }
             }
             MotionAction::Cancel => {

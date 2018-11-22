@@ -39,17 +39,18 @@ impl Player {
                 one.update(winfo, cache);
             }
             Player::Two(two) => {
-                two.update();
+                two.update(winfo);
             }
         }
-    }
+    } 
 
     pub(in self) fn handle(&mut self, action: android_glue::Motion, winfo: &mut window_info::WindowInfoCache){
         match self {
             Player::One(one) => {
                 one.handle(action, winfo);
             }
-            Player::Two(_) => {
+            Player::Two(two) => {
+                two.handle(action, winfo);
             }
         }
     }

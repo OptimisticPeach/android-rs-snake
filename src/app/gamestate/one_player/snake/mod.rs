@@ -1,5 +1,5 @@
-use graphics::*;
 use graphics::math::*;
+use graphics::*;
 
 use super::super::common::*;
 
@@ -103,51 +103,48 @@ impl Snake {
     }
 
     pub fn step(&mut self, winfo: &crate::app::window_info::WindowInfoCache) -> bool {
-        let (mut new_x, mut new_y) = self.dir.add_to(self.body[0]);
-        if self
-            .bridges
-            .iter()
-            .filter(|x| ((**x).pos.0 as isize, (**x).pos.1 as isize) == (new_x, new_y))
-            .next()
-            .is_some()
-        {
-            let (nx, ny) = self.dir.add_to_isize((new_x, new_y));
-            new_x = nx;
-            new_y = ny;
-        }
+        if winfo.frame % winfo.frames_per_move as u128 == 0 {
+            let (mut new_x, mut new_y) = self.dir.add_to(self.body[0]);
+            if self
+                .bridges
+                .iter()
+                .filter(|x| ((**x).pos.0 as isize, (**x).pos.1 as isize) == (new_x, new_y))
+                .next()
+                .is_some()
+            {
+                let (nx, ny) = self.dir.add_to_isize((new_x, new_y));
+                new_x = nx;
+                new_y = ny;
+            }
 
-        if new_x < 0 {
-            new_x = winfo.grid_size.0 as isize - 1;
-        } else if new_y < 0 {
-            new_y = winfo.grid_size.1 as isize - 1;
-        } else if new_x >= winfo.grid_size.0 as isize {
-            new_x = 0;
-        } else if new_y >= winfo.grid_size.1 as isize {
-            new_y = 0;
-        }
+            if new_x < 0 {
+                new_x = winfo.grid_size.0 as isize - 1;
+            } else if new_y < 0 {
+                new_y = winfo.grid_size.1 as isize - 1;
+            } else if new_x >= winfo.grid_size.0 as isize {
+                new_x = 0;
+            } else if new_y >= winfo.grid_size.1 as isize {
+                new_y = 0;
+            }
 
-        let (new_x, new_y) = (new_x as usize, new_y as usize);
+            let (new_x, new_y) = (new_x as usize, new_y as usize);
 
-        if self.body.contains(&(new_x as usize, new_y as usize)) && winfo.no_moves != 0 {
-            return false;
-        }
-        for i in (1..self.body.len()).rev() {
-            let to_be_get = self.body[i - 1].clone();
-            self.body[i] = to_be_get;
-        }
-        self.body[0] = (new_x, new_y);
-        if self.body[0] == self.apple {
-            self.on_get_apple(winfo);
+            if self.body.contains(&(new_x as usize, new_y as usize)) && winfo.no_moves != 0 {
+                return false;
+            }
+            for i in (1..self.body.len()).rev() {
+                let to_be_get = self.body[i - 1].clone();
+                self.body[i] = to_be_get;
+            }
+            self.body[0] = (new_x, new_y);
+            if self.body[0] == self.apple {
+                self.on_get_apple(winfo);
+            }
         }
         true
     }
 
-    fn draw_head<G: Graphics>(
-        &self,
-        c: &Context,
-        transform: Matrix2d,
-        g: &mut G
-    ) {
+    fn draw_head<G: Graphics>(&self, c: &Context, transform: Matrix2d, g: &mut G) {
         let (x, y) = self.body[0];
         let rect = Direction::get_corner_square(
             Direction::find_dir(self.body[0], self.body[1], None),
@@ -156,15 +153,13 @@ impl Snake {
         rectangle::Rectangle::new([0., 1., 1., 1.]).draw(
             rect,
             &c.draw_state,
-            transform
-                .trans(t!(x), t!(y)),
+            transform.trans(t!(x), t!(y)),
             g,
         );
         ellipse::Ellipse::new([0., 1., 1., 1.]).draw(
             rectangle::square(0., 0., 60.),
             &c.draw_state,
-            transform
-                .trans(t!(x), t!(y)),
+            transform.trans(t!(x), t!(y)),
             g,
         )
     }

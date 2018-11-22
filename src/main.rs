@@ -1,5 +1,3 @@
-#![feature(label_break_value)]
-
 extern crate android_glue;
 extern crate glutin;
 extern crate glutin_window;

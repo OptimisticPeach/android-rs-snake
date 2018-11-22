@@ -6,12 +6,11 @@ use piston::input::*;
 mod background;
 mod counter;
 mod gamestate;
-mod touch;
 mod util;
 mod window_info;
 
-use self::window_info::WindowInfoCache;
 use self::gamestate::GameState;
+use self::window_info::WindowInfoCache;
 
 pub struct App<'a> {
     gl: GlGraphics,
@@ -30,18 +29,15 @@ impl<'a> App<'a> {
             event_handler: sender,
             focus: true,
             cache: GlyphCache::from_bytes(include_bytes!("../../fonts/Ubuntu-R.ttf")).unwrap(),
-            game_data: GameState::initial()
+            game_data: GameState::initial(),
         }
     }
 
-    fn on_size_change(
-        &mut self,
-        old_w: usize,
-        old_h: usize,
-    ) {
+    fn on_size_change(&mut self, old_w: usize, old_h: usize) {
         self.window_info.reset();
         self.window_info.no_moves = 0;
-        self.game_data.size_change(old_w, old_h, &mut self.window_info);
+        self.game_data
+            .size_change(old_w, old_h, &mut self.window_info);
     }
 
     pub fn draw(&mut self, args: &RenderArgs) {
@@ -81,16 +77,15 @@ impl<'a> App<'a> {
 
     pub fn update(&mut self, _: &UpdateArgs) {
         self.window_info.frame += 1;
-        if self.window_info.frame % self.window_info.frames_per_move as u128 == 0 {
-            self.game_data.update(&mut self.window_info, &mut self.cache);
-        }
+        self.game_data
+            .update(&mut self.window_info, &mut self.cache);
         while let Ok(i) = self.event_handler.try_recv() {
             self.handle(i);
         }
     }
 
     fn handle(&mut self, event: android_glue::Event) {
-        use android_glue::{Event};
+        use android_glue::Event;
         match event {
             Event::EventMotion(motion) => self.game_data.handle(motion, &mut self.window_info),
             Event::LostFocus => {
