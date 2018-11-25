@@ -13,8 +13,7 @@ pub struct TwoPlayer {
     toucha: Touch,
     touchb: Touch,
     handled_move_a: bool,
-    handled_move_b: bool,
-    run_once: Option<()>
+    handled_move_b: bool
 }
 
 impl TwoPlayer {
@@ -24,8 +23,7 @@ impl TwoPlayer {
             toucha: Touch::new(),
             touchb: Touch::new(),
             handled_move_a: false,
-            handled_move_b: false,
-            run_once: None
+            handled_move_b: false
         }
     }
     pub fn update(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
@@ -52,13 +50,6 @@ impl TwoPlayer {
         cache: &mut impl graphics::character::CharacterCache<Texture=G::Texture>,
         winfo: &mut window_info::WindowInfoCache,
     ) {
-        //we place this here so we dont get a jumpy apple on the first frame
-        if self.run_once.is_none(){
-            self.snakes.reset_apple(winfo);
-            self.run_once = Some(());
-            self.snakes.counters.0.set_num(0, winfo, cache, 1);
-            self.snakes.counters.1.set_num(0, winfo, cache, 2);
-        }
         self.snakes.draw(c, transform, g, winfo, cache);
     }
 
@@ -114,5 +105,11 @@ impl TwoPlayer {
                 } 
             }
         }
+    }
+
+    pub fn initialize(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
+        self.snakes.reset_apple(winfo);
+        self.snakes.counters.0.set_num(0, winfo, cache, 1);
+        self.snakes.counters.1.set_num(0, winfo, cache, 2);
     }
 }

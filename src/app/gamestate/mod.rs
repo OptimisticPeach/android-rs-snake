@@ -68,25 +68,31 @@ impl Player {
 
 pub struct GameState{
     pub player_state: Player,
-    pub is_paused: bool
+    pub is_paused: bool,
+    run_once: bool
 }
 
 impl GameState {
     pub fn initial() -> Self {
         Self{
             player_state: Player::One(OnePlayer::new()),
-            is_paused: false
+            is_paused: false,
+            run_once: false
         }
     }
 
-    pub fn draw<G: Graphics, T: graphics::character::CharacterCache<Texture=G::Texture>>(
+    pub fn draw<G: Graphics>(
         &mut self,
-        c: &Context,
+        c: &Context, 
         transform: Matrix2d,
         g: &mut G,
-        cache: &mut T,
+        cache: &mut impl graphics::character::CharacterCache<Texture=G::Texture>,
         winfo: &mut window_info::WindowInfoCache,
     ){
+        if self.run_once {
+            self.run_once = true;
+            self.initialize(winfo, cache);
+        }
         self.player_state.draw(c, transform, g, cache, winfo);
         if self.is_paused {
             pause_screen::draw_pause(c, g, winfo);
@@ -112,18 +118,8 @@ impl GameState {
         self.player_state.handle(action, winfo);
     }
 
-    pub fn size_change(&mut self, old_w: usize, old_h: usize, winfo: &mut window_info::WindowInfoCache){
-        let old_orientation = old_w < old_h;
-        let new_orientation = winfo.window_size.0 < winfo.window_size.1;
-        if old_orientation && !new_orientation { //we've rotated and are now landscape
-            self.player_state = Player::Two(TwoPlayer::new());
-        }
-        else if !old_orientation && new_orientation {
-            self.player_state = Player::One(OnePlayer::new());
-        }
-        else {
-            panic!("Can't have a window of equal size lengths...");
-        }
+    pub fn size_change(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache){
+        self.initialize(winfo, cache);
     }
 
     pub fn pause(&mut self){
@@ -134,6 +130,19 @@ impl GameState {
     pub fn update(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
         if !self.is_paused{
             self.player_state.update(winfo, cache);
+        }
+    }
+
+    /// Run when we have a new window size, or when we haven't run at least once.
+    fn initialize(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
+        if winfo.window_size.0 < winfo.window_size.1 {
+            let mut player = OnePlayer::new();
+            player.initialize(winfo, cache);
+            self.player_state = Player::One(player);
+        } else {
+            let mut player = TwoPlayer::new(); 
+            player.initialize(winfo, cache);
+            self.player_state = Player::Two(player);
         }
     }
 }

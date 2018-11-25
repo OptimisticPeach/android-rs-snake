@@ -32,16 +32,16 @@ impl<'a> App<'a> {
         }
     }
 
-    fn on_size_change(&mut self, old_w: usize, old_h: usize) {
+    fn on_size_change(&mut self) {
         self.window_info.reset();
         self.window_info.no_moves = 0;
         self.game_data
-            .size_change(old_w, old_h, &mut self.window_info);
+            .size_change(&mut self.window_info, &mut self.cache);
     }
 
     pub fn draw(&mut self, args: &RenderArgs) {
         use graphics::*;
-        let mut size_change: Option<(usize, usize)> = None;
+        let mut size_change: bool = false;
         //If we try to draw without focus, then sometimes we try to draw before the eglContext has time to
         //load, causing a few problems. It's set in `fn handle` below
         if self.focus {
@@ -53,7 +53,7 @@ impl<'a> App<'a> {
             self.gl.draw(args.viewport(), |c, gl| {
                 clear([0., 0., 0., 1.], gl);
                 if winfo_ref.window_size != (args.width as usize, args.height as usize) {
-                    size_change = Some(winfo_ref.window_size);
+                    size_change = true;
                     winfo_ref.window_size = (args.width as usize, args.height as usize);
                 } else {
                     let transformed = c
@@ -65,8 +65,8 @@ impl<'a> App<'a> {
             });
         }
 
-        if let Some((oldw, oldh)) = size_change {
-            self.on_size_change(oldw, oldh);
+        if size_change {
+            self.on_size_change();
         }
     }
 
