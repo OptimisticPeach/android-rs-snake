@@ -4,7 +4,6 @@ use opengles_graphics::GlGraphics;
 use piston::input::*;
 
 mod background;
-mod counter;
 mod gamestate;
 mod util;
 mod window_info;

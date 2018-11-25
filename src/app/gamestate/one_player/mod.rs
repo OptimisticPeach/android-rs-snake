@@ -6,11 +6,12 @@ use android_glue::*;
 use crate::app::*;
 use graphics::math::Matrix2d;
 use graphics::*;
+use super::common::*;
 
 pub struct OnePlayer {
     handled_move: bool,
     touch_handler: Touch,
-    count: counter::Counter,
+    count: Counter,
     snake: Snake,
     run_once: Option<()>,
 }
@@ -20,7 +21,7 @@ impl OnePlayer {
         OnePlayer {
             handled_move: false,
             touch_handler: Touch::new(),
-            count: counter::Counter::new(),
+            count: Counter::new(0., 1),
             snake: Snake::new(4, 1, 1),
             run_once: None,
         }
@@ -38,7 +39,7 @@ impl OnePlayer {
         if self.run_once.is_none() {
             self.snake.reset_apple(winfo);
             self.run_once = Some(());
-            self.count.set_num(0, winfo, cache);
+            self.count.set_num(0, winfo, cache, 1);
         }
         self.snake.draw(&c, transform, g, winfo);
         self.count.draw(&c, cache, g);
@@ -60,7 +61,7 @@ impl OnePlayer {
         self.snake.reset(&winfo);
         winfo.no_moves = 0;
         self.count
-            .set_num((self.snake.body.len() - 3) / 3, winfo, cache);
+            .set_num((self.snake.body.len() - 3) / 3, winfo, cache, 1);
     }
 
     fn tick(
@@ -76,7 +77,7 @@ impl OnePlayer {
             self.on_dead(winfo, cache);
         }
         if self.snake.body.len() - 3 != prev_len && !dead {
-            self.count.set_num(prev_len / 3 + 1, winfo, cache);
+            self.count.set_num(prev_len / 3 + 1, winfo, cache, 1);
         }
     }
 

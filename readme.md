@@ -44,3 +44,9 @@ Now steps to run:
 - Install `cargo apk`: `cargo install cargo-apk` if you haven't already
 - Connect your device of choice (Emulator or physical)
 - Run `cargo apk run` in the root of this project (with the `Cargo.toml`)
+  
+If you want to remove the navigation and decoration bars at the top (and potentially bottom) of the screen: 
+- Clone `android-rs-glue`
+- Navigate to `cargo-apk/src/ops/build.rs`
+- At around line 440, there will be a string containing java code, change the java code to the one in `nativeactivity.java` in the root of this project
+- Compile, and replace the `cargo-apk[.exe]` in `~/.cargo/bin/` with the one in `./target/debug/cargo-apk[.exe]`

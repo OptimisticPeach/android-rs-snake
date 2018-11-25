@@ -28,7 +28,7 @@ impl Player {
                 one.draw(c, transform, g, cache, winfo);
             }
             Player::Two(two) => {
-                two.draw(c, transform, g, winfo);
+                two.draw(c, transform, g, cache, winfo);
             }
         }
     }
@@ -39,7 +39,7 @@ impl Player {
                 one.update(winfo, cache);
             }
             Player::Two(two) => {
-                two.update(winfo);
+                two.update(winfo, cache);
             }
         }
     } 

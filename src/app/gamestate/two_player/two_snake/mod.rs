@@ -16,6 +16,7 @@ pub struct SnakeDuo {
     pub apple: (usize, usize),
     pub bridges: Vec<Bridge>,
     pub snakes: (SnakeInfo, SnakeInfo),
+    pub counters: (Counter, Counter),
     pub frame_offset: u8,
 }
 
@@ -38,6 +39,7 @@ impl SnakeDuo {
                 SnakeInfo::new(len, x + 4, y + 4, [0., 1., 0., 1.], [0., 1., 1., 1.]),
             ),
             frame_offset: 9, //probably want to offset this by half the frame count to eliminate potential lag
+            counters: (Counter::new(1.57079, 2), Counter::new(-1.57079, 2))
         }
     }
 
@@ -129,7 +131,7 @@ impl SnakeDuo {
         }
     }
 
-    pub fn step(&mut self, winfo: &crate::app::window_info::WindowInfoCache) -> WinCase {
+    pub fn step(&mut self, winfo: &mut crate::app::window_info::WindowInfoCache, cache_ref: &mut impl graphics::character::CharacterCache) -> WinCase {
         let modulus = winfo.frame % winfo.frames_per_move as u128;
         if modulus == 0 {
             if self.snakes.0.dir != Direction::Middle {
@@ -142,6 +144,7 @@ impl SnakeDuo {
                 if self.snakes.0.body[0] == self.apple {
                     Self::add_to_body(&mut self.snakes.0);
                     self.on_get_apple(winfo);
+                    self.counters.0.set_num((self.snakes.0.body.len() - 4) / 3, winfo, cache_ref, 1);
                 }
             }
         }
@@ -156,6 +159,7 @@ impl SnakeDuo {
                 if self.snakes.1.body[0] == self.apple {
                     Self::add_to_body(&mut self.snakes.1);
                     self.on_get_apple(winfo);
+                    self.counters.1.set_num((self.snakes.1.body.len() - 4) / 3, winfo, cache_ref, 2);
                 }
             }
         }
@@ -168,17 +172,15 @@ impl SnakeDuo {
         transform: Matrix2d,
         g: &mut G,
         winfo: &crate::app::window_info::WindowInfoCache,
+        cache: &mut impl graphics::character::CharacterCache<Texture=G::Texture>
     ) {
         self.snakes.0.draw(c, transform, g, winfo);
         self.snakes.1.draw(c, transform, g, winfo);
+        self.counters.0.draw(c, cache, g);
+        self.counters.1.draw(c, cache, g);
 
         draw_bridges(&self.bridges, transform, g);
 
         draw_apple(self.apple, transform, g);
-    }
-
-    pub fn reset(&mut self, winfo: &crate::app::window_info::WindowInfoCache) {
-        *self = Self::new(4, 1, 1);
-        self.reset_apple(winfo);
     }
 }

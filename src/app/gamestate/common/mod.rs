@@ -4,7 +4,9 @@ use graphics::*;
 mod bridge;
 mod direction;
 mod touch;
+mod counter;
 
+pub use self::counter::*;
 pub use self::bridge::*;
 pub use self::direction::*;
 pub use self::touch::*;

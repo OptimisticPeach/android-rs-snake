@@ -28,8 +28,8 @@ impl TwoPlayer {
             run_once: None
         }
     }
-    pub fn update(&mut self, winfo: &window_info::WindowInfoCache) {
-        match self.snakes.step(winfo){
+    pub fn update(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
+        match self.snakes.step(winfo, cache){
             WinCase::FirstSnake => {
                 self.snakes = SnakeDuo::new(4, 1, 1);
                 self.snakes.reset_apple(winfo);
@@ -49,14 +49,17 @@ impl TwoPlayer {
         c: &Context,
         transform: Matrix2d,
         g: &mut G,
-        winfo: &window_info::WindowInfoCache,
+        cache: &mut impl graphics::character::CharacterCache<Texture=G::Texture>,
+        winfo: &mut window_info::WindowInfoCache,
     ) {
         //we place this here so we dont get a jumpy apple on the first frame
         if self.run_once.is_none(){
             self.snakes.reset_apple(winfo);
             self.run_once = Some(());
+            self.snakes.counters.0.set_num(0, winfo, cache, 1);
+            self.snakes.counters.1.set_num(0, winfo, cache, 2);
         }
-        self.snakes.draw(c, transform, g, winfo);
+        self.snakes.draw(c, transform, g, winfo, cache);
     }
 
     pub fn handle(

@@ -58,3 +58,4 @@ opengles_version_minor = 1
 # See https://developer.android.com/guide/topics/manifest/activity-element.html
 [package.metadata.android.activity_attributes]
 "android:screenOrientation" = "unspecified"
+"android:uiOptions" = "none"
