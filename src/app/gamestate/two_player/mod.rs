@@ -27,7 +27,8 @@ impl TwoPlayer {
         }
     }
     pub fn update(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
-        match self.snakes.step(winfo, cache){
+        let res = self.snakes.step(winfo, cache);
+        match res {
             WinCase::FirstSnake => {
                 self.snakes = SnakeDuo::new(4, 1, 1);
                 self.snakes.reset_apple(winfo);
@@ -51,8 +52,9 @@ impl TwoPlayer {
         g: &mut G,
         cache: &mut impl graphics::character::CharacterCache<Texture=G::Texture>,
         winfo: &mut window_info::WindowInfoCache,
+        tri_cache: &mut super::common::TriangleCache
     ) {
-        self.snakes.draw(c, transform, g, winfo, cache);
+        self.snakes.draw(c, transform, g, winfo, cache, tri_cache);
     }
 
     pub fn handle(

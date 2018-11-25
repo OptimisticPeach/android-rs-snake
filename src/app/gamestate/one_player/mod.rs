@@ -32,8 +32,9 @@ impl OnePlayer {
         g: &mut G,
         cache: &mut T,
         winfo: &mut window_info::WindowInfoCache,
+        tri_cache: &mut TriangleCache
     ) {
-        self.snake.draw(&c, transform, g, winfo);
+        self.snake.calc_draw(&c, g, transform, winfo, tri_cache);
         self.count.draw(&c, cache, g);
     }
 

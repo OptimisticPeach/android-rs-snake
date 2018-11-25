@@ -6,6 +6,7 @@ mod snakeinfo;
 
 pub use self::snakeinfo::*;
 
+#[derive(PartialEq)]
 pub enum WinCase {
     FirstSnake,
     SecondSnake,
@@ -18,6 +19,7 @@ pub struct SnakeDuo {
     pub snakes: (SnakeInfo, SnakeInfo),
     pub counters: (Counter, Counter),
     pub frame_offset: u8,
+    need_to_calc: bool,
 }
 
 impl SnakeDuo {
@@ -31,6 +33,7 @@ impl SnakeDuo {
             ),
             frame_offset: 9, //probably want to offset this by half the frame count to eliminate potential lag
             counters: (Counter::new(1.57079, 2), Counter::new(-1.57079, 2)),
+            need_to_calc: true,
         }
     }
 
@@ -123,20 +126,27 @@ impl SnakeDuo {
         }
     }
 
-    fn check_win(&self, winfo: &crate::app::window_info::WindowInfoCache) -> WinCase {
-        //Second snake wins
-        if self.snakes.1.contains_pos(&self.snakes.0.body[0]) {
-            return WinCase::SecondSnake;
-        } else if self.snakes.0.contains(&self.snakes.0) {
-            return WinCase::SecondSnake;
+    fn check_win(
+        &self,
+        winfo: &crate::app::window_info::WindowInfoCache,
+        moved_first: bool,
+    ) -> WinCase {
+        if moved_first {
+            //Second snake wins
+            if self.snakes.1.contains_pos(&self.snakes.0.body[0]) {
+                return WinCase::SecondSnake;
+            } else if self.snakes.0.contains(&self.snakes.0) {
+                return WinCase::SecondSnake;
+            }
+        } else {
+            //First snake wins
+            if self.snakes.0.contains_pos(&self.snakes.1.body[0]) {
+                return WinCase::FirstSnake;
+            } else if self.snakes.1.contains(&self.snakes.1) {
+                return WinCase::FirstSnake;
+            }
         }
-        //First snake wins
-        if self.snakes.0.contains_pos(&self.snakes.1.body[0]) {
-            return WinCase::FirstSnake;
-        } else if self.snakes.1.contains(&self.snakes.1) {
-            return WinCase::FirstSnake;
-        }
-        //Too big, based on greater body length
+        // Too big, based on greater body length
         if self.total_snake_size() >= (winfo.grid_size.0 * winfo.grid_size.1) - 8 {
             if self.snakes.0.body.len() > self.snakes.1.body.len() {
                 return WinCase::FirstSnake;
@@ -152,6 +162,7 @@ impl SnakeDuo {
         winfo: &mut crate::app::window_info::WindowInfoCache,
         cache_ref: &mut impl graphics::character::CharacterCache,
     ) -> WinCase {
+        // TODO: make the recalc on a per-snake basis
         let modulus = winfo.frame % winfo.frames_per_move as u128;
         if modulus == 0 {
             if self.snakes.0.dir != Direction::Middle {
@@ -167,7 +178,12 @@ impl SnakeDuo {
                     );
                     self.on_get_apple(winfo);
                 }
+                let res = self.check_win(winfo, true);
+                if res != WinCase::NoSnake {
+                    return res;
+                }
             }
+            self.need_to_calc = true;
         }
         if modulus == self.frame_offset as u128 {
             if self.snakes.1.dir != Direction::Middle {
@@ -183,27 +199,48 @@ impl SnakeDuo {
                     );
                     self.on_get_apple(winfo);
                 }
+                let res = self.check_win(winfo, false);
+                if res != WinCase::NoSnake {
+                    return res;
+                }
             }
+            self.need_to_calc = true;
         }
-        self.check_win(winfo)
+        WinCase::NoSnake
     }
 
     pub fn draw<G: Graphics>(
-        &self,
+        &mut self,
         c: &Context,
         transform: Matrix2d,
         g: &mut G,
         winfo: &crate::app::window_info::WindowInfoCache,
         cache: &mut impl graphics::character::CharacterCache<Texture = G::Texture>,
+        tri_cache: &mut TriangleCache,
     ) {
-        self.snakes.0.draw(c, transform, g, winfo);
-        self.snakes.1.draw(c, transform, g, winfo);
+        if self.need_to_calc {
+            if tri_cache.snakes.len() < 2 {
+                while tri_cache.snakes.len() != 2 {
+                    tri_cache.snakes.push(SnakeTriangleCache::new());
+                }
+            }
+            self.snakes
+                .0
+                .calc_for_draw(transform, winfo, &mut tri_cache.snakes[0]);
+            self.snakes
+                .1
+                .calc_for_draw(transform, winfo, &mut tri_cache.snakes[1]);
+
+            calc_bridges(&self.bridges, transform, tri_cache);
+
+            calc_apple(self.apple, transform, tri_cache);
+
+            self.need_to_calc = false;
+        }
+        tri_cache.draw_all(c, g);
+
         self.counters.0.draw(c, cache, g);
         self.counters.1.draw(c, cache, g);
-
-        draw_bridges(&self.bridges, transform, g);
-
-        draw_apple(self.apple, transform, g);
     }
 
     pub fn initialize(&mut self, winfo: &crate::app::window_info::WindowInfoCache) {

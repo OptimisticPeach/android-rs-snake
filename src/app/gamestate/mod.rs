@@ -22,13 +22,14 @@ impl Player {
         g: &mut G,
         cache: &mut T,
         winfo: &mut window_info::WindowInfoCache,
+        tri_cache: &mut common::TriangleCache
     ) {
         match self{
             Player::One(one) => {
-                one.draw(c, transform, g, cache, winfo);
+                one.draw(c, transform, g, cache, winfo, tri_cache);
             }
             Player::Two(two) => {
-                two.draw(c, transform, g, cache, winfo);
+                two.draw(c, transform, g, cache, winfo, tri_cache);
             }
         }
     }
@@ -69,6 +70,7 @@ impl Player {
 pub struct GameState{
     pub player_state: Player,
     pub is_paused: bool,
+    tri_cache: common::TriangleCache,
     run_once: bool
 }
 
@@ -77,6 +79,7 @@ impl GameState {
         Self{
             player_state: Player::One(OnePlayer::new()),
             is_paused: false,
+            tri_cache: common::TriangleCache::new(),
             run_once: false
         }
     }
@@ -93,7 +96,7 @@ impl GameState {
             self.run_once = true;
             self.initialize(winfo, cache);
         }
-        self.player_state.draw(c, transform, g, cache, winfo);
+        self.player_state.draw(c, transform, g, cache, winfo, &mut self.tri_cache);
         if self.is_paused {
             pause_screen::draw_pause(c, g, winfo);
         }
@@ -135,6 +138,7 @@ impl GameState {
 
     /// Run when we have a new window size, or when we haven't run at least once.
     fn initialize(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
+        self.tri_cache = common::TriangleCache::new();
         if winfo.window_size.0 < winfo.window_size.1 {
             let mut player = OnePlayer::new();
             player.initialize(winfo, cache);

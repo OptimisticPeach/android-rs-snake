@@ -3,20 +3,12 @@ use graphics::*;
 
 use super::super::common::*;
 
-macro_rules! t {
-    ($x:ident) => {
-        $x as f64 * 64.
-    };
-    (*$x:ident) => {
-        *$x as f64 * 64.
-    };
-}
-
 pub struct Snake {
     pub dir: Direction,
     pub apple: (usize, usize),
     pub body: Vec<(usize, usize)>,
     pub bridges: Vec<Bridge>,
+    pub need_to_calc: bool,
 }
 
 impl Snake {
@@ -35,6 +27,7 @@ impl Snake {
             body: temp_body,
             apple: (0, 0),
             bridges: Vec::new(),
+            need_to_calc: true
         }
     }
 
@@ -140,44 +133,36 @@ impl Snake {
             if self.body[0] == self.apple {
                 self.on_get_apple(winfo);
             }
+
+            self.need_to_calc = true;
         }
         true //did survive
     }
 
-    fn draw_head<G: Graphics>(&self, c: &Context, transform: Matrix2d, g: &mut G) {
-        let (x, y) = self.body[0];
-        let rect = Direction::get_corner_square(
-            Direction::find_dir(self.body[0], self.body[1], None),
-            self.dir,
-        );
-        rectangle::Rectangle::new([0., 1., 1., 1.]).draw(
-            rect,
-            &c.draw_state,
-            transform.trans(t!(x), t!(y)),
-            g,
-        );
-        ellipse::Ellipse::new([0., 1., 1., 1.]).draw(
-            rectangle::square(0., 0., 60.),
-            &c.draw_state,
-            transform.trans(t!(x), t!(y)),
-            g,
-        )
-    }
-
-    pub fn draw<G: Graphics>(
-        &self,
+    pub fn calc_draw(
+        &mut self,
         c: &Context,
+        g: &mut impl Graphics,
         transform: Matrix2d,
-        g: &mut G,
         winfo: &crate::app::window_info::WindowInfoCache,
+        cache: &mut TriangleCache
     ) {
-        draw_body(&self.body, c, transform, g, winfo, [0.4, 1., 0.4, 1.]);
+        if self.need_to_calc {
+            if cache.snakes.len() == 0 {
+                cache.snakes.push(SnakeTriangleCache::new());
+                cache.snakes[0].head_colour = [0., 1., 1., 1.];
+            }
+            calc_body(&self.body, transform, winfo, [0.4, 1., 0.4, 1.], &mut cache.snakes[0]);
 
-        self.draw_head(c, transform, g);
+            calc_head(self.body[0], self.body[1], self.dir, transform, &mut cache.snakes[0]);
 
-        draw_bridges(&self.bridges, transform, g);
+            calc_bridges(&self.bridges, transform, cache);
 
-        draw_apple(self.apple, transform, g);
+            calc_apple(self.apple, transform, cache);
+
+            self.need_to_calc = false;
+        }
+        cache.draw_all(c, g);
     }
 
     pub fn reset(&mut self, winfo: &crate::app::window_info::WindowInfoCache) {
