@@ -31,10 +31,12 @@ impl TwoPlayer {
             WinCase::FirstSnake => {
                 self.snakes = SnakeDuo::new(4, 1, 1);
                 self.snakes.reset_apple(winfo);
+                self.initialize(winfo, cache);
             }
             WinCase::SecondSnake => {
                 self.snakes = SnakeDuo::new(4, 1, 1);
                 self.snakes.reset_apple(winfo);
+                self.initialize(winfo, cache);
             }
             _ => {}
         }
@@ -109,6 +111,7 @@ impl TwoPlayer {
 
     pub fn initialize(&mut self, winfo: &mut window_info::WindowInfoCache, cache: &mut impl graphics::character::CharacterCache) {
         self.snakes.reset_apple(winfo);
+        self.snakes.initialize(winfo);
         self.snakes.counters.0.set_num(0, winfo, cache, 1);
         self.snakes.counters.1.set_num(0, winfo, cache, 2);
     }
