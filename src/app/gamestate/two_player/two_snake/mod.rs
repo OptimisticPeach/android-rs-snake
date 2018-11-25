@@ -117,9 +117,34 @@ impl SnakeDuo {
 
     fn on_get_apple(&mut self, winfo: &crate::app::window_info::WindowInfoCache) {
         self.reset_apple(winfo);
+
         if self.total_snake_size() % 15 == 0 {
             self.add_bridge(winfo);
         }
+    }
+
+    fn check_win(&self, winfo: &crate::app::window_info::WindowInfoCache) -> WinCase {
+        //Second snake wins
+        if self.snakes.1.contains_pos(&self.snakes.0.body[0]) {
+            return WinCase::SecondSnake;
+        } else if self.snakes.0.contains(&self.snakes.0) {
+            return WinCase::SecondSnake;
+        }
+        //First snake wins
+        if self.snakes.0.contains_pos(&self.snakes.1.body[0]) {
+            return WinCase::FirstSnake;
+        } else if self.snakes.1.contains(&self.snakes.1) {
+            return WinCase::FirstSnake;
+        }
+        //Too big, based on greater body length
+        if self.total_snake_size() >= (winfo.grid_size.0 * winfo.grid_size.1) - 8 {
+            if self.snakes.0.body.len() > self.snakes.1.body.len() {
+                return WinCase::FirstSnake;
+            } else {
+                return WinCase::SecondSnake;
+            }
+        }
+        WinCase::NoSnake
     }
 
     pub fn step(
@@ -131,44 +156,36 @@ impl SnakeDuo {
         if modulus == 0 {
             if self.snakes.0.dir != Direction::Middle {
                 self.snakes.0.advance(winfo, &self.bridges);
-                if self.snakes.1.contains_pos(&self.snakes.0.body[0]) {
-                    return WinCase::SecondSnake;
-                } else if self.snakes.0.contains(&self.snakes.0) {
-                    return WinCase::SecondSnake;
-                }
+
                 if self.snakes.0.body[0] == self.apple {
                     Self::add_to_body(&mut self.snakes.0);
-                    self.on_get_apple(winfo);
                     self.counters.0.set_num(
-                        (self.snakes.0.body.len() - 4) / 3,
+                        ((self.snakes.0.body.len() - 4) / 3) + 1,
                         winfo,
                         cache_ref,
                         1,
                     );
+                    self.on_get_apple(winfo);
                 }
             }
         }
         if modulus == self.frame_offset as u128 {
             if self.snakes.1.dir != Direction::Middle {
                 self.snakes.1.advance(winfo, &self.bridges);
-                if self.snakes.0.contains_pos(&self.snakes.1.body[0]) {
-                    return WinCase::FirstSnake;
-                } else if self.snakes.1.contains(&self.snakes.1) {
-                    return WinCase::FirstSnake;
-                }
+
                 if self.snakes.1.body[0] == self.apple {
                     Self::add_to_body(&mut self.snakes.1);
-                    self.on_get_apple(winfo);
                     self.counters.1.set_num(
-                        (self.snakes.1.body.len() - 4) / 3,
+                        ((self.snakes.1.body.len() - 4) / 3) + 1,
                         winfo,
                         cache_ref,
                         2,
                     );
+                    self.on_get_apple(winfo);
                 }
             }
         }
-        WinCase::NoSnake
+        self.check_win(winfo)
     }
 
     pub fn draw<G: Graphics>(
@@ -189,10 +206,7 @@ impl SnakeDuo {
         draw_apple(self.apple, transform, g);
     }
 
-    pub fn initialize(
-        &mut self,
-        winfo: &crate::app::window_info::WindowInfoCache
-    ) {
+    pub fn initialize(&mut self, winfo: &crate::app::window_info::WindowInfoCache) {
         let (x, y) = self.snakes.0.body[0];
         let nx = winfo.grid_size.0 - (x + 1);
         let ny = winfo.grid_size.1 - (y + 1);

@@ -130,7 +130,7 @@ impl Snake {
             let (new_x, new_y) = (new_x as usize, new_y as usize);
 
             if self.body.contains(&(new_x as usize, new_y as usize)) && winfo.no_moves != 0 {
-                return false;
+                return false; //didn't survive
             }
             for i in (1..self.body.len()).rev() {
                 let to_be_get = self.body[i - 1].clone();
@@ -141,7 +141,7 @@ impl Snake {
                 self.on_get_apple(winfo);
             }
         }
-        true
+        true //did survive
     }
 
     fn draw_head<G: Graphics>(&self, c: &Context, transform: Matrix2d, g: &mut G) {
