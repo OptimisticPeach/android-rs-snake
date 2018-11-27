@@ -90,8 +90,8 @@ impl SnakeInfo {
         winfo: &crate::app::window_info::WindowInfoCache,
         cache: &mut SnakeTriangleCache,
     ) {
-        calc_body(&self.body, transform, winfo, self.color_body, cache);
-        calc_head(self.body[0], self.body[1], self.dir, transform, cache);
+        cache.calc_body(&self.body, transform, winfo, self.color_body);
+        cache.calc_head(self.body[0], self.body[1], self.dir, transform);
         cache.head_colour = self.color_head;
     }
 }

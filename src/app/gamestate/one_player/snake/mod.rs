@@ -152,13 +152,13 @@ impl Snake {
                 cache.snakes.push(SnakeTriangleCache::new());
                 cache.snakes[0].head_colour = [0., 1., 1., 1.];
             }
-            calc_body(&self.body, transform, winfo, [0.4, 1., 0.4, 1.], &mut cache.snakes[0]);
+            cache.snakes[0].calc_body(&self.body, transform, winfo, [0.4, 1., 0.4, 1.]);
 
-            calc_head(self.body[0], self.body[1], self.dir, transform, &mut cache.snakes[0]);
+            cache.snakes[0].calc_head(self.body[0], self.body[1], self.dir, transform);
 
-            calc_bridges(&self.bridges, transform, cache);
+            cache.calc_bridges(&self.bridges, transform);
 
-            calc_apple(self.apple, transform, cache);
+            cache.calc_apple(self.apple, transform);
 
             self.need_to_calc = false;
         }

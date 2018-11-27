@@ -117,4 +117,8 @@ impl TwoPlayer {
         self.snakes.counters.0.set_num(0, winfo, cache, 1);
         self.snakes.counters.1.set_num(0, winfo, cache, 2);
     }
+    pub fn pause(&mut self) {
+        self.toucha.cancel();
+        self.touchb.cancel();
+    }
 }

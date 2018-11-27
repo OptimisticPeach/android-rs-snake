@@ -84,9 +84,12 @@ impl SnakeDuo {
                         || (x, y + 1) == (posx, posy)
                     {
                         flag = true;
-                    } else if self.apple == (x, y) {
-                        flag = true;
-                    }
+                    } 
+                }
+                if self.apple == (posx, posy) ||
+                   posx == 0 || posx == winfo.grid_size.0 - 1 ||
+                   posy == 0 || posy == winfo.grid_size.1 - 1 {
+                    flag = true;
                 }
                 if !flag {
                     break 'b;
@@ -171,7 +174,7 @@ impl SnakeDuo {
                 if self.snakes.0.body[0] == self.apple {
                     Self::add_to_body(&mut self.snakes.0);
                     self.counters.0.set_num(
-                        ((self.snakes.0.body.len() - 4) / 3) + 1,
+                        (self.snakes.0.body.len() - 4) / 3,
                         winfo,
                         cache_ref,
                         1,
@@ -192,7 +195,7 @@ impl SnakeDuo {
                 if self.snakes.1.body[0] == self.apple {
                     Self::add_to_body(&mut self.snakes.1);
                     self.counters.1.set_num(
-                        ((self.snakes.1.body.len() - 4) / 3) + 1,
+                        (self.snakes.1.body.len() - 4) / 3,
                         winfo,
                         cache_ref,
                         2,
@@ -231,9 +234,9 @@ impl SnakeDuo {
                 .1
                 .calc_for_draw(transform, winfo, &mut tri_cache.snakes[1]);
 
-            calc_bridges(&self.bridges, transform, tri_cache);
+            tri_cache.calc_bridges(&self.bridges, transform);
 
-            calc_apple(self.apple, transform, tri_cache);
+            tri_cache.calc_apple(self.apple, transform);
 
             self.need_to_calc = false;
         }

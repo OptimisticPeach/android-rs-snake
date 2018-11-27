@@ -61,7 +61,8 @@ impl Player {
             Player::One(one) => {
                 one.pause();
             }
-            Player::Two(_) => {
+            Player::Two(two) => {
+                two.pause();
             }
         }
     }
