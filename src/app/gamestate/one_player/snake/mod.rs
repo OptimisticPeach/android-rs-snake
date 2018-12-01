@@ -57,7 +57,7 @@ impl Snake {
         while {
             if self.apple == (posx as usize, posy as usize) {
                 true
-            } else if self.snake.contains_pos(&(posx as usize, posy as usize)) {
+            } else if self.snake.body.contains(&(posx as usize, posy as usize)) {
                 true
             } else {
                 let mut flag = false;
@@ -97,7 +97,7 @@ impl Snake {
         if winfo.frame % winfo.frames_per_move as u128 == 0 {
             let head_pos = self.snake.advance(winfo, &self.bridges);
 
-            if self.snake.body.contains(&head_pos) && winfo.no_moves != 0 {
+            if self.snake.contains(&self.snake) && winfo.no_moves != 0 {
                 return false; //didn't survive
             }
             if head_pos == self.apple {

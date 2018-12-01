@@ -1,5 +1,4 @@
 use super::*;
-use graphics::math::*;
 
 pub struct SnakeInfo {
     pub dir: Direction,
