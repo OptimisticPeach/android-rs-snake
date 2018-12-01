@@ -1,6 +1,4 @@
 use super::*;
-use graphics::math::*;
-use graphics::*;
 
 pub type TriList = Vec<[f32; 2]>;
 pub type Color = [f32; 4];

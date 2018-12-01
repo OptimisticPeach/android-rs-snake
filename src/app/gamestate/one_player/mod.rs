@@ -54,7 +54,7 @@ impl OnePlayer {
         self.snake.reset(&winfo);
         winfo.no_moves = 0;
         self.count
-            .set_num((self.snake.body.len() - 3) / 3, winfo, cache, 1);
+            .set_num((self.snake.snake.body.len() - 3) / 3, winfo, cache, 1);
     }
 
     fn tick(
@@ -63,13 +63,13 @@ impl OnePlayer {
         cache: &mut impl graphics::character::CharacterCache,
     ) {
         self.handled_move = false;
-        let prev_len = self.snake.body.len() - 3;
+        let prev_len = self.snake.snake.body.len() - 3;
         let mut dead = false;
         if !self.snake.step(winfo) {
             dead = true;
             self.on_dead(winfo, cache);
         }
-        if self.snake.body.len() - 3 != prev_len && !dead {
+        if self.snake.snake.body.len() - 3 != prev_len && !dead {
             self.count.set_num(prev_len / 3 + 1, winfo, cache, 1);
         }
     }
@@ -97,8 +97,8 @@ impl OnePlayer {
                     if pointer_id as usize == pid {
                         let angle = self.touch_handler.end(x, y, true).unwrap();
                         if !self.handled_move {
-                            self.snake.dir =
-                                super::common::Direction::get_dir(angle, self.snake.dir);
+                            self.snake.snake.dir =
+                                super::common::Direction::get_dir(angle, self.snake.snake.dir);
                             self.handled_move = true;
                             winfo.no_moves += 1;
                         }

@@ -4,9 +4,8 @@ use graphics::*;
 use super::super::common::*;
 
 pub struct Snake {
-    pub dir: Direction,
+    pub snake: SnakeInfo,
     pub apple: (usize, usize),
-    pub body: Vec<(usize, usize)>,
     pub bridges: Vec<Bridge>,
     pub need_to_calc: bool,
 }
@@ -23,8 +22,7 @@ impl Snake {
         }
 
         Snake {
-            dir: Direction::Middle,
-            body: temp_body,
+            snake: SnakeInfo::new(len, x, y, [0., 1., 0., 1.], [0., 1., 1., 1.]),
             apple: (0, 0),
             bridges: Vec::new(),
             need_to_calc: true
@@ -35,7 +33,7 @@ impl Snake {
         let mut posx = crate::app::util::rand_range(0, winfo.grid_size.0) as usize;
         let mut posy = crate::app::util::rand_range(0, winfo.grid_size.1) as usize;
         while {
-            if self.body.contains(&(posx as usize, posy as usize)) {
+            if self.snake.contains_pos(&(posx as usize, posy as usize)) {
                 true
             } else {
                 let mut flag = false;
@@ -59,7 +57,7 @@ impl Snake {
         while {
             if self.apple == (posx as usize, posy as usize) {
                 true
-            } else if self.body.contains(&(posx as usize, posy as usize)) {
+            } else if self.snake.contains_pos(&(posx as usize, posy as usize)) {
                 true
             } else {
                 let mut flag = false;
@@ -86,51 +84,23 @@ impl Snake {
 
     fn on_get_apple(&mut self, winfo: &crate::app::window_info::WindowInfoCache) {
         self.reset_apple(winfo);
-        let last = self.body.last().unwrap().clone();
-        self.body.push(last);
-        self.body.push(last);
-        self.body.push(last);
-        if (self.body.len() - 4) % 15 == 0 {
+        let last = self.snake.body.last().unwrap().clone();
+        self.snake.body.push(last);
+        self.snake.body.push(last);
+        self.snake.body.push(last);
+        if (self.snake.body.len() - 4) % 15 == 0 {
             self.add_bridge(winfo);
         }
     }
 
     pub fn step(&mut self, winfo: &crate::app::window_info::WindowInfoCache) -> bool {
         if winfo.frame % winfo.frames_per_move as u128 == 0 {
-            let (mut new_x, mut new_y) = self.dir.add_to(self.body[0]);
-            if self
-                .bridges
-                .iter()
-                .filter(|x| ((**x).pos.0 as isize, (**x).pos.1 as isize) == (new_x, new_y))
-                .next()
-                .is_some()
-            {
-                let (nx, ny) = self.dir.add_to_isize((new_x, new_y));
-                new_x = nx;
-                new_y = ny;
-            }
+            let head_pos = self.snake.advance(winfo, &self.bridges);
 
-            if new_x < 0 {
-                new_x = winfo.grid_size.0 as isize - 1;
-            } else if new_y < 0 {
-                new_y = winfo.grid_size.1 as isize - 1;
-            } else if new_x >= winfo.grid_size.0 as isize {
-                new_x = 0;
-            } else if new_y >= winfo.grid_size.1 as isize {
-                new_y = 0;
-            }
-
-            let (new_x, new_y) = (new_x as usize, new_y as usize);
-
-            if self.body.contains(&(new_x as usize, new_y as usize)) && winfo.no_moves != 0 {
+            if self.snake.body.contains(&head_pos) && winfo.no_moves != 0 {
                 return false; //didn't survive
             }
-            for i in (1..self.body.len()).rev() {
-                let to_be_get = self.body[i - 1].clone();
-                self.body[i] = to_be_get;
-            }
-            self.body[0] = (new_x, new_y);
-            if self.body[0] == self.apple {
+            if head_pos == self.apple {
                 self.on_get_apple(winfo);
             }
 
@@ -152,9 +122,7 @@ impl Snake {
                 cache.snakes.push(SnakeTriangleCache::new());
                 cache.snakes[0].head_colour = [0., 1., 1., 1.];
             }
-            cache.snakes[0].calc_body(&self.body, transform, winfo, [0.4, 1., 0.4, 1.]);
-
-            cache.snakes[0].calc_head(self.body[0], self.body[1], self.dir, transform);
+            self.snake.calc_for_draw(transform, winfo, &mut cache.snakes[0]);
 
             cache.calc_bridges(&self.bridges, transform);
 

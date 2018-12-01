@@ -2,10 +2,6 @@ use super::super::common::*;
 use graphics::math::*;
 use graphics::*;
 
-mod snakeinfo;
-
-pub use self::snakeinfo::*;
-
 #[derive(PartialEq)]
 pub enum WinCase {
     FirstSnake,

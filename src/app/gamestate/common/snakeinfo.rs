@@ -1,4 +1,4 @@
-use super::super::super::common::*;
+use super::*;
 use graphics::math::*;
 
 pub struct SnakeInfo {
@@ -33,7 +33,7 @@ impl SnakeInfo {
         &mut self,
         winfo: &crate::app::window_info::WindowInfoCache,
         bridges: &Vec<Bridge>,
-    ) {
+    ) -> (usize, usize){
         let (mut new_x, mut new_y) = self.dir.add_to(self.body[0]);
         if bridges
             .iter()
@@ -64,6 +64,7 @@ impl SnakeInfo {
         }
 
         self.body[0] = (new_x, new_y);
+        (new_x, new_y)
     }
 
     pub fn contains(&self, other: &Self) -> bool {
