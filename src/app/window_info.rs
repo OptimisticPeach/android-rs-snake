@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use android_base::graphics;
 
 #[derive(Debug)]
 pub struct WindowInfoCache {
@@ -63,7 +64,7 @@ impl WindowInfoCache {
         let mut size_x = 0.;
         let mut size_y = 0.;
         for i in string.chars() {
-            let character = cache.character(scale, i);
+            let character = cache.character(scale, i).ok().unwrap();
             size_x += character.size[0] + character.offset[0];
             if size_y < character.size[1] + character.offset[1] {
                 size_y = character.size[1] + character.offset[1];
