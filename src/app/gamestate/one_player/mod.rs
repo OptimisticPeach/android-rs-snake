@@ -2,7 +2,6 @@ mod snake;
 
 pub use self::snake::*;
 use super::common::Touch;
-use android_glue::*;
 use crate::app::*;
 use graphics::math::Matrix2d;
 use graphics::*;

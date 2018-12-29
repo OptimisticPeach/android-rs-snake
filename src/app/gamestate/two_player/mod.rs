@@ -3,7 +3,6 @@ use graphics::math::Matrix2d;
 use graphics::*;
 use super::common::Touch;
 use crate::app::window_info;
-use android_glue::*;
 
 mod two_snake;
 

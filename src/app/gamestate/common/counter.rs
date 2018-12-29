@@ -46,6 +46,6 @@ impl Counter {
             cache_ref,
             c.transform.trans(self.offset_x, self.offset_y).rot_rad(self.rotation),
             g,
-        );
+        ).expect("Oops, text doesn't work!");
     }
 }
